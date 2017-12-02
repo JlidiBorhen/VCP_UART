@@ -1,0 +1,1527 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.50.2.10312/W32 for ARM       06/May/2016  23:31:37
+# Copyright 1999-2015 IAR Systems AB.
+#
+#    Cpu mode     =  thumb
+#    Endian       =  little
+#    Source file  =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\usb_lib\cdc\usbd_cdc_core.c
+#    Command line =  
+#        "D:\IAR Workspace\STM32F407\VCP_ESP\usb_lib\cdc\usbd_cdc_core.c" -D
+#        USE_STDPERIPH_DRIVER -D STM32F4XX -D USE_FULL_ASSERT -lCN "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\List" -o "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\Obj" --no_cse --no_unroll
+#        --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling
+#        --debug --endian=little --cpu=Cortex-M4 -e --fpu=VFPv4_sp
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\INC\c\DLib_Config_Full.h" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\Include\" -I
+#        "D:\IAR Workspace\STM32F407\VCP_ESP\..\Utilities\STM32F4-Discovery\"
+#        -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\ST\STM32F4xx\Include\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_conf\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\cdc\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\otg\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\core\" -On --use_c++_inline -I
+#        "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\CMSIS\Include\" -D ARM_MATH_CM4
+#    List file    =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\Debug\List\usbd_cdc_core.lst
+#    Object file  =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\Debug\Obj\usbd_cdc_core.o
+#
+###############################################################################
+
+D:\IAR Workspace\STM32F407\VCP_ESP\usb_lib\cdc\usbd_cdc_core.c
+      1          /**
+      2            ******************************************************************************
+      3            * @file    usbd_cdc_core.c
+      4            * @author  MCD Application Team
+      5            * @version V1.0.0
+      6            * @date    22-July-2011
+      7            * @brief   This file provides the high layer firmware functions to manage the 
+      8            *          following functionalities of the USB CDC Class:
+      9            *           - Initialization and Configuration of high and low layer
+     10            *           - Enumeration as CDC Device (and enumeration for each implemented memory interface)
+     11            *           - OUT/IN data transfer
+     12            *           - Command IN transfer (class requests management)
+     13            *           - Error management
+     14            *           
+     15            *  @verbatim
+     16            *      
+     17            *          ===================================================================      
+     18            *                                CDC Class Driver Description
+     19            *          =================================================================== 
+     20            *           This driver manages the "Universal Serial Bus Class Definitions for Communications Devices
+     21            *           Revision 1.2 November 16, 2007" and the sub-protocol specification of "Universal Serial Bus 
+     22            *           Communications Class Subclass Specification for PSTN Devices Revision 1.2 February 9, 2007"
+     23            *           This driver implements the following aspects of the specification:
+     24            *             - Device descriptor management
+     25            *             - Configuration descriptor management
+     26            *             - Enumeration as CDC device with 2 data endpoints (IN and OUT) and 1 command endpoint (IN)
+     27            *             - Requests management (as described in section 6.2 in specification)
+     28            *             - Abstract Control Model compliant
+     29            *             - Union Functional collection (using 1 IN endpoint for control)
+     30            *             - Data interface class
+     31          
+     32            *           @note
+     33            *             For the Abstract Control Model, this core allows only transmitting the requests to
+     34            *             lower layer dispatcher (ie. usbd_cdc_vcp.c/.h) which should manage each request and
+     35            *             perform relative actions.
+     36            * 
+     37            *           These aspects may be enriched or modified for a specific user application.
+     38            *          
+     39            *            This driver doesn't implement the following aspects of the specification 
+     40            *            (but it is possible to manage these features with some modifications on this driver):
+     41            *             - Any class-specific aspect relative to communication classes should be managed by user application.
+     42            *             - All communication classes other than PSTN are not managed
+     43            *      
+     44            *  @endverbatim
+     45            *                                  
+     46            ******************************************************************************               
+     47            * @attention
+     48            *
+     49            * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+     50            * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+     51            * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+     52            * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+     53            * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+     54            * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+     55            *
+     56            * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+     57            ******************************************************************************
+     58            */ 
+     59          
+     60          /* Includes ------------------------------------------------------------------*/
+     61          #include "usbd_cdc_core.h"
+     62          #include "usbd_desc.h"
+     63          #include "usbd_req.h"
+     64          
+     65          
+     66          /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
+     67            * @{
+     68            */
+     69          
+     70          
+     71          /** @defgroup usbd_cdc 
+     72            * @brief usbd core module
+     73            * @{
+     74            */ 
+     75          
+     76          /** @defgroup usbd_cdc_Private_TypesDefinitions
+     77            * @{
+     78            */ 
+     79          /**
+     80            * @}
+     81            */ 
+     82          
+     83          
+     84          /** @defgroup usbd_cdc_Private_Defines
+     85            * @{
+     86            */ 
+     87          /**
+     88            * @}
+     89            */ 
+     90          
+     91          
+     92          /** @defgroup usbd_cdc_Private_Macros
+     93            * @{
+     94            */ 
+     95          /**
+     96            * @}
+     97            */ 
+     98          
+     99          
+    100          /** @defgroup usbd_cdc_Private_FunctionPrototypes
+    101            * @{
+    102            */
+    103          
+    104          /*********************************************
+    105             CDC Device library callbacks
+    106           *********************************************/
+    107          static uint8_t  usbd_cdc_Init        (void  *pdev, uint8_t cfgidx);
+    108          static uint8_t  usbd_cdc_DeInit      (void  *pdev, uint8_t cfgidx);
+    109          static uint8_t  usbd_cdc_Setup       (void  *pdev, USB_SETUP_REQ *req);
+    110          static uint8_t  usbd_cdc_EP0_RxReady  (void *pdev);
+    111          static uint8_t  usbd_cdc_DataIn      (void *pdev, uint8_t epnum);
+    112          static uint8_t  usbd_cdc_DataOut     (void *pdev, uint8_t epnum);
+    113          static uint8_t  usbd_cdc_SOF         (void *pdev);
+    114          
+    115          /*********************************************
+    116             CDC specific management functions
+    117           *********************************************/
+    118          static void Handle_USBAsynchXfer  (void *pdev);
+    119          static uint8_t  *USBD_cdc_GetCfgDesc (uint8_t speed, uint16_t *length);
+    120          #ifdef USE_USB_OTG_HS  
+    121          static uint8_t  *USBD_cdc_GetOtherCfgDesc (uint8_t speed, uint16_t *length);
+    122          #endif
+    123          /**
+    124            * @}
+    125            */ 
+    126          
+    127          /** @defgroup usbd_cdc_Private_Variables
+    128            * @{
+    129            */ 
+    130          extern CDC_IF_Prop_TypeDef  APP_FOPS;
+    131          extern uint8_t USBD_DeviceDesc   [USB_SIZ_DEVICE_DESC];
+    132          
+    133          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    134            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    135              #pragma data_alignment=4   
+    136            #endif
+    137          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+    138          __ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc  [USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END ;
+    139          
+    140          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    141            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    142              #pragma data_alignment=4   
+    143            #endif
+    144          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+
+   \                                 In section .bss, align 4
+    145          __ALIGN_BEGIN uint8_t usbd_cdc_OtherCfgDesc  [USB_CDC_CONFIG_DESC_SIZ] __ALIGN_END ;
+   \                     usbd_cdc_OtherCfgDesc:
+   \   00000000                      DS8 68
+    146          
+    147          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    148            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    149              #pragma data_alignment=4   
+    150            #endif
+    151          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+
+   \                                 In section .bss, align 4
+    152          __ALIGN_BEGIN static __IO uint32_t  usbd_cdc_AltSet  __ALIGN_END = 0;
+   \                     usbd_cdc_AltSet:
+   \   00000000                      DS8 4
+    153          
+    154          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    155            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    156              #pragma data_alignment=4   
+    157            #endif
+    158          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+
+   \                                 In section .bss, align 4
+    159          __ALIGN_BEGIN uint8_t USB_Rx_Buffer   [CDC_DATA_MAX_PACKET_SIZE] __ALIGN_END ;
+   \                     USB_Rx_Buffer:
+   \   00000000                      DS8 64
+    160          
+    161          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    162            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    163              #pragma data_alignment=4   
+    164            #endif
+    165          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+
+   \                                 In section .bss, align 4
+    166          __ALIGN_BEGIN uint8_t APP_Rx_Buffer   [APP_RX_DATA_SIZE] __ALIGN_END ; 
+   \                     APP_Rx_Buffer:
+   \   00000000                      DS8 2048
+    167          
+    168          
+    169          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    170            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    171              #pragma data_alignment=4   
+    172            #endif
+    173          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+
+   \                                 In section .bss, align 4
+    174          __ALIGN_BEGIN uint8_t CmdBuff[CDC_CMD_PACKET_SZE] __ALIGN_END ;
+   \                     CmdBuff:
+   \   00000000                      DS8 8
+    175          
+
+   \                                 In section .bss, align 4
+    176          uint32_t APP_Rx_ptr_in  = 0;
+   \                     APP_Rx_ptr_in:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+    177          uint32_t APP_Rx_ptr_out = 0;
+   \                     APP_Rx_ptr_out:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+    178          uint32_t APP_Rx_length  = 0;
+   \                     APP_Rx_length:
+   \   00000000                      DS8 4
+    179          
+
+   \                                 In section .bss, align 1
+    180          uint8_t  USB_Tx_State = 0;
+   \                     USB_Tx_State:
+   \   00000000                      DS8 1
+    181          
+
+   \                                 In section .data, align 4
+    182          static uint32_t cdcCmd = 0xFF;
+   \                     cdcCmd:
+   \   00000000   0x000000FF         DC32 255
+
+   \                                 In section .bss, align 4
+    183          static uint32_t cdcLen = 0;
+   \                     cdcLen:
+   \   00000000                      DS8 4
+    184          
+    185          /* CDC interface class callbacks structure */
+
+   \                                 In section .data, align 4
+    186          USBD_Class_cb_TypeDef  USBD_CDC_cb = 
+   \                     USBD_CDC_cb:
+   \   00000000   0x........         DC32 usbd_cdc_Init, usbd_cdc_DeInit, usbd_cdc_Setup, 0H
+   \              0x........   
+   \              0x........   
+   \              0x00000000   
+   \   00000010   0x........         DC32 usbd_cdc_EP0_RxReady, usbd_cdc_DataIn, usbd_cdc_DataOut
+   \              0x........   
+   \              0x........   
+   \   0000001C   0x........         DC32 usbd_cdc_SOF, 0H, 0H, USBD_cdc_GetCfgDesc
+   \              0x00000000   
+   \              0x00000000   
+   \              0x........   
+    187          {
+    188            usbd_cdc_Init,
+    189            usbd_cdc_DeInit,
+    190            usbd_cdc_Setup,
+    191            NULL,                 /* EP0_TxSent, */
+    192            usbd_cdc_EP0_RxReady,
+    193            usbd_cdc_DataIn,
+    194            usbd_cdc_DataOut,
+    195            usbd_cdc_SOF,
+    196            NULL,
+    197            NULL,     
+    198            USBD_cdc_GetCfgDesc,
+    199          #ifdef USE_USB_OTG_HS   
+    200            USBD_cdc_GetOtherCfgDesc, /* use same cobfig as per FS */
+    201          #endif /* USE_USB_OTG_HS  */
+    202          };
+    203          
+    204          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    205            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    206              #pragma data_alignment=4   
+    207            #endif
+    208          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+    209          /* USB CDC device Configuration Descriptor */
+
+   \                                 In section .data, align 4
+    210          __ALIGN_BEGIN uint8_t usbd_cdc_CfgDesc[USB_CDC_CONFIG_DESC_SIZ]  __ALIGN_END =
+   \                     usbd_cdc_CfgDesc:
+   \   00000000   0x09 0x02          DC8 9, 2, 67, 0, 2, 1, 0, 192, 50, 9, 4, 0, 0, 1, 2, 2, 1, 0, 5, 36, 0
+   \              0x43 0x00    
+   \              0x02 0x01    
+   \              0x00 0xC0    
+   \              0x32 0x09    
+   \              0x04 0x00    
+   \              0x00 0x01    
+   \              0x02 0x02    
+   \              0x01 0x00    
+   \              0x05 0x24    
+   \              0x00         
+   \   00000015   0x10 0x01          DC8 16, 1, 5, 36, 1, 0, 1, 4, 36, 2, 2, 5, 36, 6, 0, 1, 7, 5, 130, 3, 8
+   \              0x05 0x24    
+   \              0x01 0x00    
+   \              0x01 0x04    
+   \              0x24 0x02    
+   \              0x02 0x05    
+   \              0x24 0x06    
+   \              0x00 0x01    
+   \              0x07 0x05    
+   \              0x82 0x03    
+   \              0x08         
+   \   0000002A   0x00 0xFF          DC8 0, 255, 9, 4, 1, 0, 2, 10, 0, 0, 0, 7, 5, 1, 2, 64, 0, 0, 7, 5, 129
+   \              0x09 0x04    
+   \              0x01 0x00    
+   \              0x02 0x0A    
+   \              0x00 0x00    
+   \              0x00 0x07    
+   \              0x05 0x01    
+   \              0x02 0x40    
+   \              0x00 0x00    
+   \              0x07 0x05    
+   \              0x81         
+   \   0000003F   0x02 0x40          DC8 2, 64, 0, 0, 0
+   \              0x00 0x00    
+   \              0x00         
+    211          {
+    212            /*Configuration Descriptor*/
+    213            0x09,   /* bLength: Configuration Descriptor size */
+    214            USB_CONFIGURATION_DESCRIPTOR_TYPE,      /* bDescriptorType: Configuration */
+    215            USB_CDC_CONFIG_DESC_SIZ,                /* wTotalLength:no of returned bytes */
+    216            0x00,
+    217            0x02,   /* bNumInterfaces: 2 interface */
+    218            0x01,   /* bConfigurationValue: Configuration value */
+    219            0x00,   /* iConfiguration: Index of string descriptor describing the configuration */
+    220            0xC0,   /* bmAttributes: self powered */
+    221            0x32,   /* MaxPower 0 mA */
+    222            
+    223            /*---------------------------------------------------------------------------*/
+    224            
+    225            /*Interface Descriptor */
+    226            0x09,   /* bLength: Interface Descriptor size */
+    227            USB_INTERFACE_DESCRIPTOR_TYPE,  /* bDescriptorType: Interface */
+    228            /* Interface descriptor type */
+    229            0x00,   /* bInterfaceNumber: Number of Interface */
+    230            0x00,   /* bAlternateSetting: Alternate setting */
+    231            0x01,   /* bNumEndpoints: One endpoints used */
+    232            0x02,   /* bInterfaceClass: Communication Interface Class */
+    233            0x02,   /* bInterfaceSubClass: Abstract Control Model */
+    234            0x01,   /* bInterfaceProtocol: Common AT commands */
+    235            0x00,   /* iInterface: */
+    236            
+    237            /*Header Functional Descriptor*/
+    238            0x05,   /* bLength: Endpoint Descriptor size */
+    239            0x24,   /* bDescriptorType: CS_INTERFACE */
+    240            0x00,   /* bDescriptorSubtype: Header Func Desc */
+    241            0x10,   /* bcdCDC: spec release number */
+    242            0x01,
+    243            
+    244            /*Call Management Functional Descriptor*/
+    245            0x05,   /* bFunctionLength */
+    246            0x24,   /* bDescriptorType: CS_INTERFACE */
+    247            0x01,   /* bDescriptorSubtype: Call Management Func Desc */
+    248            0x00,   /* bmCapabilities: D0+D1 */
+    249            0x01,   /* bDataInterface: 1 */
+    250            
+    251            /*ACM Functional Descriptor*/
+    252            0x04,   /* bFunctionLength */
+    253            0x24,   /* bDescriptorType: CS_INTERFACE */
+    254            0x02,   /* bDescriptorSubtype: Abstract Control Management desc */
+    255            0x02,   /* bmCapabilities */
+    256            
+    257            /*Union Functional Descriptor*/
+    258            0x05,   /* bFunctionLength */
+    259            0x24,   /* bDescriptorType: CS_INTERFACE */
+    260            0x06,   /* bDescriptorSubtype: Union func desc */
+    261            0x00,   /* bMasterInterface: Communication class interface */
+    262            0x01,   /* bSlaveInterface0: Data Class Interface */
+    263            
+    264            /*Endpoint 2 Descriptor*/
+    265            0x07,                           /* bLength: Endpoint Descriptor size */
+    266            USB_ENDPOINT_DESCRIPTOR_TYPE,   /* bDescriptorType: Endpoint */
+    267            CDC_CMD_EP,                     /* bEndpointAddress */
+    268            0x03,                           /* bmAttributes: Interrupt */
+    269            LOBYTE(CDC_CMD_PACKET_SZE),     /* wMaxPacketSize: */
+    270            HIBYTE(CDC_CMD_PACKET_SZE),
+    271          #ifdef USE_USB_OTG_HS
+    272            0x10,                           /* bInterval: */
+    273          #else
+    274            0xFF,                           /* bInterval: */
+    275          #endif /* USE_USB_OTG_HS */
+    276            
+    277            /*---------------------------------------------------------------------------*/
+    278            
+    279            /*Data class interface descriptor*/
+    280            0x09,   /* bLength: Endpoint Descriptor size */
+    281            USB_INTERFACE_DESCRIPTOR_TYPE,  /* bDescriptorType: */
+    282            0x01,   /* bInterfaceNumber: Number of Interface */
+    283            0x00,   /* bAlternateSetting: Alternate setting */
+    284            0x02,   /* bNumEndpoints: Two endpoints used */
+    285            0x0A,   /* bInterfaceClass: CDC */
+    286            0x00,   /* bInterfaceSubClass: */
+    287            0x00,   /* bInterfaceProtocol: */
+    288            0x00,   /* iInterface: */
+    289            
+    290            /*Endpoint OUT Descriptor*/
+    291            0x07,   /* bLength: Endpoint Descriptor size */
+    292            USB_ENDPOINT_DESCRIPTOR_TYPE,      /* bDescriptorType: Endpoint */
+    293            CDC_OUT_EP,                        /* bEndpointAddress */
+    294            0x02,                              /* bmAttributes: Bulk */
+    295            LOBYTE(CDC_DATA_MAX_PACKET_SIZE),  /* wMaxPacketSize: */
+    296            HIBYTE(CDC_DATA_MAX_PACKET_SIZE),
+    297            0x00,                              /* bInterval: ignore for Bulk transfer */
+    298            
+    299            /*Endpoint IN Descriptor*/
+    300            0x07,   /* bLength: Endpoint Descriptor size */
+    301            USB_ENDPOINT_DESCRIPTOR_TYPE,      /* bDescriptorType: Endpoint */
+    302            CDC_IN_EP,                         /* bEndpointAddress */
+    303            0x02,                              /* bmAttributes: Bulk */
+    304            LOBYTE(CDC_DATA_MAX_PACKET_SIZE),  /* wMaxPacketSize: */
+    305            HIBYTE(CDC_DATA_MAX_PACKET_SIZE),
+    306            0x00                               /* bInterval: ignore for Bulk transfer */
+    307          } ;
+    308          
+    309          #ifdef USE_USB_OTG_HS
+    310          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    311            #if defined ( __ICCARM__ ) /*!< IAR Compiler */
+    312              #pragma data_alignment=4   
+    313            #endif
+    314          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */ 
+    315          __ALIGN_BEGIN uint8_t usbd_cdc_OtherCfgDesc[USB_CDC_CONFIG_DESC_SIZ]  __ALIGN_END =
+    316          { 
+    317            0x09,   /* bLength: Configuation Descriptor size */
+    318            USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION,   
+    319            USB_CDC_CONFIG_DESC_SIZ,
+    320            0x00,
+    321            0x02,   /* bNumInterfaces: 2 interfaces */
+    322            0x01,   /* bConfigurationValue: */
+    323            0x04,   /* iConfiguration: */
+    324            0xC0,   /* bmAttributes: */
+    325            0x32,   /* MaxPower 100 mA */  
+    326            
+    327            /*Interface Descriptor */
+    328            0x09,   /* bLength: Interface Descriptor size */
+    329            USB_INTERFACE_DESCRIPTOR_TYPE,  /* bDescriptorType: Interface */
+    330            /* Interface descriptor type */
+    331            0x00,   /* bInterfaceNumber: Number of Interface */
+    332            0x00,   /* bAlternateSetting: Alternate setting */
+    333            0x01,   /* bNumEndpoints: One endpoints used */
+    334            0x02,   /* bInterfaceClass: Communication Interface Class */
+    335            0x02,   /* bInterfaceSubClass: Abstract Control Model */
+    336            0x01,   /* bInterfaceProtocol: Common AT commands */
+    337            0x00,   /* iInterface: */
+    338            
+    339            /*Header Functional Descriptor*/
+    340            0x05,   /* bLength: Endpoint Descriptor size */
+    341            0x24,   /* bDescriptorType: CS_INTERFACE */
+    342            0x00,   /* bDescriptorSubtype: Header Func Desc */
+    343            0x10,   /* bcdCDC: spec release number */
+    344            0x01,
+    345            
+    346            /*Call Management Functional Descriptor*/
+    347            0x05,   /* bFunctionLength */
+    348            0x24,   /* bDescriptorType: CS_INTERFACE */
+    349            0x01,   /* bDescriptorSubtype: Call Management Func Desc */
+    350            0x00,   /* bmCapabilities: D0+D1 */
+    351            0x01,   /* bDataInterface: 1 */
+    352            
+    353            /*ACM Functional Descriptor*/
+    354            0x04,   /* bFunctionLength */
+    355            0x24,   /* bDescriptorType: CS_INTERFACE */
+    356            0x02,   /* bDescriptorSubtype: Abstract Control Management desc */
+    357            0x02,   /* bmCapabilities */
+    358            
+    359            /*Union Functional Descriptor*/
+    360            0x05,   /* bFunctionLength */
+    361            0x24,   /* bDescriptorType: CS_INTERFACE */
+    362            0x06,   /* bDescriptorSubtype: Union func desc */
+    363            0x00,   /* bMasterInterface: Communication class interface */
+    364            0x01,   /* bSlaveInterface0: Data Class Interface */
+    365            
+    366            /*Endpoint 2 Descriptor*/
+    367            0x07,                           /* bLength: Endpoint Descriptor size */
+    368            USB_ENDPOINT_DESCRIPTOR_TYPE,   /* bDescriptorType: Endpoint */
+    369            CDC_CMD_EP,                     /* bEndpointAddress */
+    370            0x03,                           /* bmAttributes: Interrupt */
+    371            LOBYTE(CDC_CMD_PACKET_SZE),     /* wMaxPacketSize: */
+    372            HIBYTE(CDC_CMD_PACKET_SZE),
+    373            0xFF,                           /* bInterval: */
+    374            
+    375            /*---------------------------------------------------------------------------*/
+    376            
+    377            /*Data class interface descriptor*/
+    378            0x09,   /* bLength: Endpoint Descriptor size */
+    379            USB_INTERFACE_DESCRIPTOR_TYPE,  /* bDescriptorType: */
+    380            0x01,   /* bInterfaceNumber: Number of Interface */
+    381            0x00,   /* bAlternateSetting: Alternate setting */
+    382            0x02,   /* bNumEndpoints: Two endpoints used */
+    383            0x0A,   /* bInterfaceClass: CDC */
+    384            0x00,   /* bInterfaceSubClass: */
+    385            0x00,   /* bInterfaceProtocol: */
+    386            0x00,   /* iInterface: */
+    387            
+    388            /*Endpoint OUT Descriptor*/
+    389            0x07,   /* bLength: Endpoint Descriptor size */
+    390            USB_ENDPOINT_DESCRIPTOR_TYPE,      /* bDescriptorType: Endpoint */
+    391            CDC_OUT_EP,                        /* bEndpointAddress */
+    392            0x02,                              /* bmAttributes: Bulk */
+    393            0x40,                              /* wMaxPacketSize: */
+    394            0x00,
+    395            0x00,                              /* bInterval: ignore for Bulk transfer */
+    396            
+    397            /*Endpoint IN Descriptor*/
+    398            0x07,   /* bLength: Endpoint Descriptor size */
+    399            USB_ENDPOINT_DESCRIPTOR_TYPE,     /* bDescriptorType: Endpoint */
+    400            CDC_IN_EP,                        /* bEndpointAddress */
+    401            0x02,                             /* bmAttributes: Bulk */
+    402            0x40,                             /* wMaxPacketSize: */
+    403            0x00,
+    404            0x00                              /* bInterval */
+    405          };
+    406          #endif /* USE_USB_OTG_HS  */
+    407          
+    408          /**
+    409            * @}
+    410            */ 
+    411          
+    412          /** @defgroup usbd_cdc_Private_Functions
+    413            * @{
+    414            */ 
+    415          
+    416          /**
+    417            * @brief  usbd_cdc_Init
+    418            *         Initilaize the CDC interface
+    419            * @param  pdev: device instance
+    420            * @param  cfgidx: Configuration index
+    421            * @retval status
+    422            */
+
+   \                                 In section .text, align 2, keep-with-next
+    423          static uint8_t  usbd_cdc_Init (void  *pdev, 
+    424                                         uint8_t cfgidx)
+    425          {
+   \                     usbd_cdc_Init: (+1)
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+    426            uint8_t *pbuf;
+    427          
+    428            /* Open EP IN */
+    429            DCD_EP_Open(pdev,
+    430                        CDC_IN_EP,
+    431                        CDC_DATA_IN_PACKET_SIZE,
+    432                        USB_OTG_EP_BULK);
+   \   00000006   0x2302             MOVS     R3,#+2
+   \   00000008   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   0000000C   0xF8B0 0x2039      LDRH     R2,[R0, #+57]
+   \   00000010   0x2181             MOVS     R1,#+129
+   \   00000012   0x0020             MOVS     R0,R4
+   \   00000014   0x.... 0x....      BL       DCD_EP_Open
+    433            
+    434            /* Open EP OUT */
+    435            DCD_EP_Open(pdev,
+    436                        CDC_OUT_EP,
+    437                        CDC_DATA_OUT_PACKET_SIZE,
+    438                        USB_OTG_EP_BULK);
+   \   00000018   0x2302             MOVS     R3,#+2
+   \   0000001A   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   0000001E   0xF8B0 0x2040      LDRH     R2,[R0, #+64]
+   \   00000022   0x2101             MOVS     R1,#+1
+   \   00000024   0x0020             MOVS     R0,R4
+   \   00000026   0x.... 0x....      BL       DCD_EP_Open
+    439            
+    440            /* Open Command IN EP */
+    441            DCD_EP_Open(pdev,
+    442                        CDC_CMD_EP,
+    443                        CDC_CMD_PACKET_SZE,
+    444                        USB_OTG_EP_INT);
+   \   0000002A   0x2303             MOVS     R3,#+3
+   \   0000002C   0x2208             MOVS     R2,#+8
+   \   0000002E   0x2182             MOVS     R1,#+130
+   \   00000030   0x0020             MOVS     R0,R4
+   \   00000032   0x.... 0x....      BL       DCD_EP_Open
+    445            
+    446            pbuf = (uint8_t *)USBD_DeviceDesc;
+   \   00000036   0x.... 0x....      LDR.W    R0,??DataTable8
+   \   0000003A   0x0006             MOVS     R6,R0
+    447            pbuf[4] = DEVICE_CLASS_CDC;
+   \   0000003C   0x2002             MOVS     R0,#+2
+   \   0000003E   0x7130             STRB     R0,[R6, #+4]
+    448            pbuf[5] = DEVICE_SUBCLASS_CDC;
+   \   00000040   0x2000             MOVS     R0,#+0
+   \   00000042   0x7170             STRB     R0,[R6, #+5]
+    449            
+    450            /* Initialize the Interface physical components */
+    451            APP_FOPS.pIf_Init();
+   \   00000044   0x....             LDR.N    R0,??DataTable8_1
+   \   00000046   0x6800             LDR      R0,[R0, #+0]
+   \   00000048   0x4780             BLX      R0
+    452          
+    453            /* Prepare Out endpoint to receive next packet */
+    454            DCD_EP_PrepareRx(pdev,
+    455                             CDC_OUT_EP,
+    456                             (uint8_t*)(USB_Rx_Buffer),
+    457                             CDC_DATA_OUT_PACKET_SIZE);
+   \   0000004A   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   0000004E   0xF8B0 0x3040      LDRH     R3,[R0, #+64]
+   \   00000052   0x....             LDR.N    R2,??DataTable8_2
+   \   00000054   0x2101             MOVS     R1,#+1
+   \   00000056   0x0020             MOVS     R0,R4
+   \   00000058   0x.... 0x....      BL       DCD_EP_PrepareRx
+    458            
+    459            return USBD_OK;
+   \   0000005C   0x2000             MOVS     R0,#+0
+   \   0000005E   0xBD70             POP      {R4-R6,PC}       ;; return
+    460          }
+    461          
+    462          /**
+    463            * @brief  usbd_cdc_Init
+    464            *         DeInitialize the CDC layer
+    465            * @param  pdev: device instance
+    466            * @param  cfgidx: Configuration index
+    467            * @retval status
+    468            */
+
+   \                                 In section .text, align 2, keep-with-next
+    469          static uint8_t  usbd_cdc_DeInit (void  *pdev, 
+    470                                           uint8_t cfgidx)
+    471          {
+   \                     usbd_cdc_DeInit: (+1)
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+    472            /* Open EP IN */
+    473            DCD_EP_Close(pdev,
+    474                        CDC_IN_EP);
+   \   00000006   0x2181             MOVS     R1,#+129
+   \   00000008   0x0020             MOVS     R0,R4
+   \   0000000A   0x.... 0x....      BL       DCD_EP_Close
+    475            
+    476            /* Open EP OUT */
+    477            DCD_EP_Close(pdev,
+    478                        CDC_OUT_EP);
+   \   0000000E   0x2101             MOVS     R1,#+1
+   \   00000010   0x0020             MOVS     R0,R4
+   \   00000012   0x.... 0x....      BL       DCD_EP_Close
+    479            
+    480            /* Open Command IN EP */
+    481            DCD_EP_Close(pdev,
+    482                        CDC_CMD_EP);
+   \   00000016   0x2182             MOVS     R1,#+130
+   \   00000018   0x0020             MOVS     R0,R4
+   \   0000001A   0x.... 0x....      BL       DCD_EP_Close
+    483          
+    484            /* Restore default state of the Interface physical components */
+    485            APP_FOPS.pIf_DeInit();
+   \   0000001E   0x....             LDR.N    R0,??DataTable8_1
+   \   00000020   0x6840             LDR      R0,[R0, #+4]
+   \   00000022   0x4780             BLX      R0
+    486            
+    487            return USBD_OK;
+   \   00000024   0x2000             MOVS     R0,#+0
+   \   00000026   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+    488          }
+    489          
+    490          /**
+    491            * @brief  usbd_cdc_Setup
+    492            *         Handle the CDC specific requests
+    493            * @param  pdev: instance
+    494            * @param  req: usb requests
+    495            * @retval status
+    496            */
+
+   \                                 In section .text, align 2, keep-with-next
+    497          static uint8_t  usbd_cdc_Setup (void  *pdev, 
+    498                                          USB_SETUP_REQ *req)
+    499          {
+   \                     usbd_cdc_Setup: (+1)
+   \   00000000   0xB5F8             PUSH     {R3-R7,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+    500            uint16_t len;
+    501            uint8_t  *pbuf;
+    502            
+    503            switch (req->bmRequest & USB_REQ_TYPE_MASK)
+   \   00000006   0x7828             LDRB     R0,[R5, #+0]
+   \   00000008   0xF010 0x0060      ANDS     R0,R0,#0x60
+   \   0000000C   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   0000000E   0x2800             CMP      R0,#+0
+   \   00000010   0xD02D             BEQ.N    ??usbd_cdc_Setup_0
+   \   00000012   0x2820             CMP      R0,#+32
+   \   00000014   0xD125             BNE.N    ??usbd_cdc_Setup_1
+    504            {
+    505              /* CDC Class Requests -------------------------------*/
+    506            case USB_REQ_TYPE_CLASS :
+    507                /* Check if the request is a data setup packet */
+    508                if (req->wLength)
+   \                     ??usbd_cdc_Setup_2: (+1)
+   \   00000016   0x88E8             LDRH     R0,[R5, #+6]
+   \   00000018   0x2800             CMP      R0,#+0
+   \   0000001A   0xD01A             BEQ.N    ??usbd_cdc_Setup_3
+    509                {
+    510                  /* Check if the request is Device-to-Host */
+    511                  if (req->bmRequest & 0x80)
+   \   0000001C   0x7828             LDRB     R0,[R5, #+0]
+   \   0000001E   0x0600             LSLS     R0,R0,#+24
+   \   00000020   0xD50B             BPL.N    ??usbd_cdc_Setup_4
+    512                  {
+    513                    /* Get the data to be sent to Host from interface layer */
+    514                    APP_FOPS.pIf_Ctrl(req->bRequest, CmdBuff, req->wLength);
+   \   00000022   0x88EA             LDRH     R2,[R5, #+6]
+   \   00000024   0x....             LDR.N    R1,??DataTable8_3
+   \   00000026   0x7868             LDRB     R0,[R5, #+1]
+   \   00000028   0x....             LDR.N    R3,??DataTable8_1
+   \   0000002A   0x689B             LDR      R3,[R3, #+8]
+   \   0000002C   0x4798             BLX      R3
+    515                    
+    516                    /* Send the data to the host */
+    517                    USBD_CtlSendData (pdev, 
+    518                                      CmdBuff,
+    519                                      req->wLength);          
+   \   0000002E   0x88EA             LDRH     R2,[R5, #+6]
+   \   00000030   0x....             LDR.N    R1,??DataTable8_3
+   \   00000032   0x0020             MOVS     R0,R4
+   \   00000034   0x.... 0x....      BL       USBD_CtlSendData
+   \   00000038   0xE011             B.N      ??usbd_cdc_Setup_5
+    520                  }
+    521                  else /* Host-to-Device requeset */
+    522                  {
+    523                    /* Set the value of the current command to be processed */
+    524                    cdcCmd = req->bRequest;
+   \                     ??usbd_cdc_Setup_4: (+1)
+   \   0000003A   0x7868             LDRB     R0,[R5, #+1]
+   \   0000003C   0x....             LDR.N    R1,??DataTable8_4
+   \   0000003E   0x6008             STR      R0,[R1, #+0]
+    525                    cdcLen = req->wLength;
+   \   00000040   0x88E8             LDRH     R0,[R5, #+6]
+   \   00000042   0x....             LDR.N    R1,??DataTable8_5
+   \   00000044   0x6008             STR      R0,[R1, #+0]
+    526                    
+    527                    /* Prepare the reception of the buffer over EP0
+    528                    Next step: the received data will be managed in usbd_cdc_EP0_TxSent() 
+    529                    function. */
+    530                    USBD_CtlPrepareRx (pdev,
+    531                                       CmdBuff,
+    532                                       req->wLength);          
+   \   00000046   0x88EA             LDRH     R2,[R5, #+6]
+   \   00000048   0x....             LDR.N    R1,??DataTable8_3
+   \   0000004A   0x0020             MOVS     R0,R4
+   \   0000004C   0x.... 0x....      BL       USBD_CtlPrepareRx
+   \   00000050   0xE005             B.N      ??usbd_cdc_Setup_5
+    533                  }
+    534                }
+    535                else /* No Data request */
+    536                {
+    537                  /* Transfer the command to the interface layer */
+    538                  APP_FOPS.pIf_Ctrl(req->bRequest, NULL, 0);
+   \                     ??usbd_cdc_Setup_3: (+1)
+   \   00000052   0x2200             MOVS     R2,#+0
+   \   00000054   0x2100             MOVS     R1,#+0
+   \   00000056   0x7868             LDRB     R0,[R5, #+1]
+   \   00000058   0x....             LDR.N    R3,??DataTable8_1
+   \   0000005A   0x689B             LDR      R3,[R3, #+8]
+   \   0000005C   0x4798             BLX      R3
+    539                }
+    540                
+    541                return USBD_OK;
+   \                     ??usbd_cdc_Setup_5: (+1)
+   \   0000005E   0x2000             MOVS     R0,#+0
+   \   00000060   0xE034             B.N      ??usbd_cdc_Setup_6
+    542                
+    543              default:
+    544                USBD_CtlError (pdev, req);
+   \                     ??usbd_cdc_Setup_1: (+1)
+   \   00000062   0x0029             MOVS     R1,R5
+   \   00000064   0x0020             MOVS     R0,R4
+   \   00000066   0x.... 0x....      BL       USBD_CtlError
+    545                return USBD_FAIL;
+   \   0000006A   0x2002             MOVS     R0,#+2
+   \   0000006C   0xE02E             B.N      ??usbd_cdc_Setup_6
+    546              
+    547                
+    548                
+    549              /* Standard Requests -------------------------------*/
+    550            case USB_REQ_TYPE_STANDARD:
+    551              switch (req->bRequest)
+   \                     ??usbd_cdc_Setup_0: (+1)
+   \   0000006E   0x7868             LDRB     R0,[R5, #+1]
+   \   00000070   0x2806             CMP      R0,#+6
+   \   00000072   0xD004             BEQ.N    ??usbd_cdc_Setup_7
+   \   00000074   0x280A             CMP      R0,#+10
+   \   00000076   0xD017             BEQ.N    ??usbd_cdc_Setup_8
+   \   00000078   0x280B             CMP      R0,#+11
+   \   0000007A   0xD01B             BEQ.N    ??usbd_cdc_Setup_9
+   \   0000007C   0xE025             B.N      ??usbd_cdc_Setup_10
+    552              {
+    553              case USB_REQ_GET_DESCRIPTOR: 
+    554                if( (req->wValue >> 8) == CDC_DESCRIPTOR_TYPE)
+   \                     ??usbd_cdc_Setup_7: (+1)
+   \   0000007E   0x8868             LDRH     R0,[R5, #+2]
+   \   00000080   0xB280             UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   00000082   0x0A00             LSRS     R0,R0,#+8
+   \   00000084   0xB280             UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   00000086   0x2821             CMP      R0,#+33
+   \   00000088   0xD107             BNE.N    ??usbd_cdc_Setup_11
+    555                {
+    556          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    557                  pbuf = usbd_cdc_Desc;   
+    558          #else
+    559                  pbuf = usbd_cdc_CfgDesc + 9 + (9 * USBD_ITF_MAX_NUM);
+   \   0000008A   0x....             LDR.N    R0,??DataTable8_6
+   \   0000008C   0x0007             MOVS     R7,R0
+    560          #endif 
+    561                  len = MIN(USB_CDC_DESC_SIZ , req->wLength);
+   \   0000008E   0x88E8             LDRH     R0,[R5, #+6]
+   \   00000090   0x283B             CMP      R0,#+59
+   \   00000092   0xDB01             BLT.N    ??usbd_cdc_Setup_12
+   \   00000094   0x263A             MOVS     R6,#+58
+   \   00000096   0xE000             B.N      ??usbd_cdc_Setup_11
+   \                     ??usbd_cdc_Setup_12: (+1)
+   \   00000098   0x88EE             LDRH     R6,[R5, #+6]
+    562                }
+    563                
+    564                USBD_CtlSendData (pdev, 
+    565                                  pbuf,
+    566                                  len);
+   \                     ??usbd_cdc_Setup_11: (+1)
+   \   0000009A   0x0032             MOVS     R2,R6
+   \   0000009C   0xB292             UXTH     R2,R2            ;; ZeroExt  R2,R2,#+16,#+16
+   \   0000009E   0x0039             MOVS     R1,R7
+   \   000000A0   0x0020             MOVS     R0,R4
+   \   000000A2   0x.... 0x....      BL       USBD_CtlSendData
+    567                break;
+   \   000000A6   0xE010             B.N      ??usbd_cdc_Setup_10
+    568                
+    569              case USB_REQ_GET_INTERFACE :
+    570                USBD_CtlSendData (pdev,
+    571                                  (uint8_t *)&usbd_cdc_AltSet,
+    572                                  1);
+   \                     ??usbd_cdc_Setup_8: (+1)
+   \   000000A8   0x2201             MOVS     R2,#+1
+   \   000000AA   0x....             LDR.N    R1,??DataTable8_7
+   \   000000AC   0x0020             MOVS     R0,R4
+   \   000000AE   0x.... 0x....      BL       USBD_CtlSendData
+    573                break;
+   \   000000B2   0xE00A             B.N      ??usbd_cdc_Setup_10
+    574                
+    575              case USB_REQ_SET_INTERFACE :
+    576                if ((uint8_t)(req->wValue) < USBD_ITF_MAX_NUM)
+   \                     ??usbd_cdc_Setup_9: (+1)
+   \   000000B4   0x78A8             LDRB     R0,[R5, #+2]
+   \   000000B6   0x2800             CMP      R0,#+0
+   \   000000B8   0xD103             BNE.N    ??usbd_cdc_Setup_13
+    577                {
+    578                  usbd_cdc_AltSet = (uint8_t)(req->wValue);
+   \   000000BA   0x78A8             LDRB     R0,[R5, #+2]
+   \   000000BC   0x....             LDR.N    R1,??DataTable8_7
+   \   000000BE   0x6008             STR      R0,[R1, #+0]
+   \   000000C0   0xE003             B.N      ??usbd_cdc_Setup_14
+    579                }
+    580                else
+    581                {
+    582                  /* Call the error management function (command will be nacked */
+    583                  USBD_CtlError (pdev, req);
+   \                     ??usbd_cdc_Setup_13: (+1)
+   \   000000C2   0x0029             MOVS     R1,R5
+   \   000000C4   0x0020             MOVS     R0,R4
+   \   000000C6   0x.... 0x....      BL       USBD_CtlError
+    584                }
+    585                break;
+    586              }
+    587            }
+    588            return USBD_OK;
+   \                     ??usbd_cdc_Setup_14: (+1)
+   \                     ??usbd_cdc_Setup_10: (+1)
+   \   000000CA   0x2000             MOVS     R0,#+0
+   \                     ??usbd_cdc_Setup_6: (+1)
+   \   000000CC   0xBDF2             POP      {R1,R4-R7,PC}    ;; return
+    589          }
+    590          
+    591          /**
+    592            * @brief  usbd_cdc_EP0_RxReady
+    593            *         Data received on control endpoint
+    594            * @param  pdev: device device instance
+    595            * @retval status
+    596            */
+
+   \                                 In section .text, align 2, keep-with-next
+    597          static uint8_t  usbd_cdc_EP0_RxReady (void  *pdev)
+    598          { 
+   \                     usbd_cdc_EP0_RxReady: (+1)
+   \   00000000   0xB510             PUSH     {R4,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    599            if (cdcCmd != NO_CMD)
+   \   00000004   0x....             LDR.N    R0,??DataTable8_4
+   \   00000006   0x6800             LDR      R0,[R0, #+0]
+   \   00000008   0x28FF             CMP      R0,#+255
+   \   0000000A   0xD00A             BEQ.N    ??usbd_cdc_EP0_RxReady_0
+    600            {
+    601              /* Process the data */
+    602              APP_FOPS.pIf_Ctrl(cdcCmd, CmdBuff, cdcLen);
+   \   0000000C   0x....             LDR.N    R0,??DataTable8_5
+   \   0000000E   0x6802             LDR      R2,[R0, #+0]
+   \   00000010   0x....             LDR.N    R1,??DataTable8_3
+   \   00000012   0x....             LDR.N    R0,??DataTable8_4
+   \   00000014   0x6800             LDR      R0,[R0, #+0]
+   \   00000016   0x....             LDR.N    R3,??DataTable8_1
+   \   00000018   0x689B             LDR      R3,[R3, #+8]
+   \   0000001A   0x4798             BLX      R3
+    603              
+    604              /* Reset the command variable to default value */
+    605              cdcCmd = NO_CMD;
+   \   0000001C   0x20FF             MOVS     R0,#+255
+   \   0000001E   0x....             LDR.N    R1,??DataTable8_4
+   \   00000020   0x6008             STR      R0,[R1, #+0]
+    606            }
+    607            
+    608            return USBD_OK;
+   \                     ??usbd_cdc_EP0_RxReady_0: (+1)
+   \   00000022   0x2000             MOVS     R0,#+0
+   \   00000024   0xBD10             POP      {R4,PC}          ;; return
+    609          }
+    610          
+    611          /**
+    612            * @brief  usbd_audio_DataIn
+    613            *         Data sent on non-control IN endpoint
+    614            * @param  pdev: device instance
+    615            * @param  epnum: endpoint number
+    616            * @retval status
+    617            */
+
+   \                                 In section .text, align 2, keep-with-next
+    618          static uint8_t  usbd_cdc_DataIn (void *pdev, uint8_t epnum)
+    619          {
+   \                     usbd_cdc_DataIn: (+1)
+   \   00000000   0xB5F8             PUSH     {R3-R7,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+    620            uint16_t USB_Tx_ptr;
+    621            uint16_t USB_Tx_length;
+    622          
+    623            if (USB_Tx_State == 1)
+   \   00000006   0x....             LDR.N    R0,??DataTable8_8
+   \   00000008   0x7800             LDRB     R0,[R0, #+0]
+   \   0000000A   0x2801             CMP      R0,#+1
+   \   0000000C   0xD144             BNE.N    ??usbd_cdc_DataIn_0
+    624            {
+    625              if (APP_Rx_length == 0) 
+   \   0000000E   0x....             LDR.N    R0,??DataTable8_9
+   \   00000010   0x6800             LDR      R0,[R0, #+0]
+   \   00000012   0x2800             CMP      R0,#+0
+   \   00000014   0xD103             BNE.N    ??usbd_cdc_DataIn_1
+    626              {
+    627                USB_Tx_State = 0;
+   \   00000016   0x2000             MOVS     R0,#+0
+   \   00000018   0x....             LDR.N    R1,??DataTable8_8
+   \   0000001A   0x7008             STRB     R0,[R1, #+0]
+   \   0000001C   0xE03C             B.N      ??usbd_cdc_DataIn_0
+    628              }
+    629              else 
+    630              {
+    631                if (APP_Rx_length > CDC_DATA_IN_PACKET_SIZE){
+   \                     ??usbd_cdc_DataIn_1: (+1)
+   \   0000001E   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   00000022   0xF8B0 0x0039      LDRH     R0,[R0, #+57]
+   \   00000026   0x....             LDR.N    R1,??DataTable8_9
+   \   00000028   0x6809             LDR      R1,[R1, #+0]
+   \   0000002A   0x4288             CMP      R0,R1
+   \   0000002C   0xD21B             BCS.N    ??usbd_cdc_DataIn_2
+    632                  USB_Tx_ptr = APP_Rx_ptr_out;
+   \   0000002E   0x....             LDR.N    R0,??DataTable8_10
+   \   00000030   0x6800             LDR      R0,[R0, #+0]
+   \   00000032   0x0006             MOVS     R6,R0
+    633                  USB_Tx_length = CDC_DATA_IN_PACKET_SIZE;
+   \   00000034   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   00000038   0xF8B0 0x0039      LDRH     R0,[R0, #+57]
+   \   0000003C   0x0007             MOVS     R7,R0
+    634                  
+    635                  APP_Rx_ptr_out += CDC_DATA_IN_PACKET_SIZE;
+   \   0000003E   0x....             LDR.N    R0,??DataTable8_10
+   \   00000040   0x6800             LDR      R0,[R0, #+0]
+   \   00000042   0xF8D4 0x15EC      LDR      R1,[R4, #+1516]
+   \   00000046   0xF8B1 0x1039      LDRH     R1,[R1, #+57]
+   \   0000004A   0xFA10 0xF081      UXTAH    R0,R0,R1
+   \   0000004E   0x....             LDR.N    R1,??DataTable8_10
+   \   00000050   0x6008             STR      R0,[R1, #+0]
+    636                  APP_Rx_length -= CDC_DATA_IN_PACKET_SIZE;    
+   \   00000052   0x....             LDR.N    R0,??DataTable8_9
+   \   00000054   0x6800             LDR      R0,[R0, #+0]
+   \   00000056   0xF8D4 0x15EC      LDR      R1,[R4, #+1516]
+   \   0000005A   0xF8B1 0x1039      LDRH     R1,[R1, #+57]
+   \   0000005E   0x1A40             SUBS     R0,R0,R1
+   \   00000060   0x....             LDR.N    R1,??DataTable8_9
+   \   00000062   0x6008             STR      R0,[R1, #+0]
+   \   00000064   0xE00F             B.N      ??usbd_cdc_DataIn_3
+    637                }
+    638                else 
+    639                {
+    640                  USB_Tx_ptr = APP_Rx_ptr_out;
+   \                     ??usbd_cdc_DataIn_2: (+1)
+   \   00000066   0x....             LDR.N    R0,??DataTable8_10
+   \   00000068   0x6800             LDR      R0,[R0, #+0]
+   \   0000006A   0x0006             MOVS     R6,R0
+    641                  USB_Tx_length = APP_Rx_length;
+   \   0000006C   0x....             LDR.N    R0,??DataTable8_9
+   \   0000006E   0x6800             LDR      R0,[R0, #+0]
+   \   00000070   0x0007             MOVS     R7,R0
+    642                  
+    643                  APP_Rx_ptr_out += APP_Rx_length;
+   \   00000072   0x....             LDR.N    R0,??DataTable8_10
+   \   00000074   0x6800             LDR      R0,[R0, #+0]
+   \   00000076   0x....             LDR.N    R1,??DataTable8_9
+   \   00000078   0x6809             LDR      R1,[R1, #+0]
+   \   0000007A   0x1808             ADDS     R0,R1,R0
+   \   0000007C   0x....             LDR.N    R1,??DataTable8_10
+   \   0000007E   0x6008             STR      R0,[R1, #+0]
+    644                  APP_Rx_length = 0;
+   \   00000080   0x2000             MOVS     R0,#+0
+   \   00000082   0x....             LDR.N    R1,??DataTable8_9
+   \   00000084   0x6008             STR      R0,[R1, #+0]
+    645                }
+    646                
+    647                /* Prepare the available data buffer to be sent on IN endpoint */
+    648                DCD_EP_Tx (pdev,
+    649                           CDC_IN_EP,
+    650                           (uint8_t*)&APP_Rx_Buffer[USB_Tx_ptr],
+    651                           USB_Tx_length);
+   \                     ??usbd_cdc_DataIn_3: (+1)
+   \   00000086   0xB2BF             UXTH     R7,R7            ;; ZeroExt  R7,R7,#+16,#+16
+   \   00000088   0x003B             MOVS     R3,R7
+   \   0000008A   0x....             LDR.N    R0,??DataTable8_11
+   \   0000008C   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   0000008E   0x1832             ADDS     R2,R6,R0
+   \   00000090   0x2181             MOVS     R1,#+129
+   \   00000092   0x0020             MOVS     R0,R4
+   \   00000094   0x.... 0x....      BL       DCD_EP_Tx
+    652              }
+    653            }  
+    654            
+    655            return USBD_OK;
+   \                     ??usbd_cdc_DataIn_0: (+1)
+   \   00000098   0x2000             MOVS     R0,#+0
+   \   0000009A   0xBDF2             POP      {R1,R4-R7,PC}    ;; return
+    656          }
+    657          
+    658          /**
+    659            * @brief  usbd_audio_DataOut
+    660            *         Data received on non-control Out endpoint
+    661            * @param  pdev: device instance
+    662            * @param  epnum: endpoint number
+    663            * @retval status
+    664            */
+
+   \                                 In section .text, align 2, keep-with-next
+    665          static uint8_t  usbd_cdc_DataOut (void *pdev, uint8_t epnum)
+    666          {      
+   \                     usbd_cdc_DataOut: (+1)
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+    667            uint16_t USB_Rx_Cnt;
+    668            
+    669            /* Get the received data buffer and update the counter */
+    670            USB_Rx_Cnt = ((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].xfer_count;
+   \   00000006   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   00000008   0x2028             MOVS     R0,#+40
+   \   0000000A   0xFB00 0x4005      MLA      R0,R0,R5,R4
+   \   0000000E   0xF8D0 0x0388      LDR      R0,[R0, #+904]
+   \   00000012   0x0006             MOVS     R6,R0
+    671            
+    672            /* USB data will be immediately processed, this allow next USB traffic being 
+    673               NAKed till the end of the application Xfer */
+    674            APP_FOPS.pIf_DataRx(USB_Rx_Buffer, USB_Rx_Cnt);
+   \   00000014   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   00000016   0x0031             MOVS     R1,R6
+   \   00000018   0x....             LDR.N    R0,??DataTable8_2
+   \   0000001A   0x....             LDR.N    R2,??DataTable8_1
+   \   0000001C   0x6912             LDR      R2,[R2, #+16]
+   \   0000001E   0x4790             BLX      R2
+    675            
+    676            /* Prepare Out endpoint to receive next packet */
+    677            DCD_EP_PrepareRx(pdev,
+    678                             CDC_OUT_EP,
+    679                             (uint8_t*)(USB_Rx_Buffer),
+    680                             CDC_DATA_OUT_PACKET_SIZE);
+   \   00000020   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   00000024   0xF8B0 0x3040      LDRH     R3,[R0, #+64]
+   \   00000028   0x....             LDR.N    R2,??DataTable8_2
+   \   0000002A   0x2101             MOVS     R1,#+1
+   \   0000002C   0x0020             MOVS     R0,R4
+   \   0000002E   0x.... 0x....      BL       DCD_EP_PrepareRx
+    681          
+    682            return USBD_OK;
+   \   00000032   0x2000             MOVS     R0,#+0
+   \   00000034   0xBD70             POP      {R4-R6,PC}       ;; return
+    683          }
+    684          
+    685          /**
+    686            * @brief  usbd_audio_SOF
+    687            *         Start Of Frame event management
+    688            * @param  pdev: instance
+    689            * @param  epnum: endpoint number
+    690            * @retval status
+    691            */
+
+   \                                 In section .text, align 2, keep-with-next
+    692          static uint8_t  usbd_cdc_SOF (void *pdev)
+    693          {      
+   \                     usbd_cdc_SOF: (+1)
+   \   00000000   0xB510             PUSH     {R4,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    694            static uint32_t FrameCount = 0;
+    695            
+    696            if (FrameCount++ == CDC_IN_FRAME_INTERVAL)
+   \   00000004   0x....             LDR.N    R0,??DataTable8_12
+   \   00000006   0x6800             LDR      R0,[R0, #+0]
+   \   00000008   0x1C41             ADDS     R1,R0,#+1
+   \   0000000A   0x....             LDR.N    R2,??DataTable8_12
+   \   0000000C   0x6011             STR      R1,[R2, #+0]
+   \   0000000E   0x2805             CMP      R0,#+5
+   \   00000010   0xD105             BNE.N    ??usbd_cdc_SOF_0
+    697            {
+    698              /* Reset the frame counter */
+    699              FrameCount = 0;
+   \   00000012   0x2000             MOVS     R0,#+0
+   \   00000014   0x....             LDR.N    R1,??DataTable8_12
+   \   00000016   0x6008             STR      R0,[R1, #+0]
+    700              
+    701              /* Check the data to be sent through IN pipe */
+    702              Handle_USBAsynchXfer(pdev);
+   \   00000018   0x0020             MOVS     R0,R4
+   \   0000001A   0x.... 0x....      BL       Handle_USBAsynchXfer
+    703            }
+    704            
+    705            return USBD_OK;
+   \                     ??usbd_cdc_SOF_0: (+1)
+   \   0000001E   0x2000             MOVS     R0,#+0
+   \   00000020   0xBD10             POP      {R4,PC}          ;; return
+    706          }
+
+   \                                 In section .bss, align 4
+   \                     ??FrameCount:
+   \   00000000                      DS8 4
+    707          
+    708          /**
+    709            * @brief  Handle_USBAsynchXfer
+    710            *         Send data to USB
+    711            * @param  pdev: instance
+    712            * @retval None
+    713            */
+
+   \                                 In section .text, align 2, keep-with-next
+    714          static void Handle_USBAsynchXfer (void *pdev)
+    715          {
+   \                     Handle_USBAsynchXfer: (+1)
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    716            uint16_t USB_Tx_ptr;
+    717            uint16_t USB_Tx_length;
+    718            
+    719            if(USB_Tx_State != 1)
+   \   00000004   0x....             LDR.N    R0,??DataTable8_8
+   \   00000006   0x7800             LDRB     R0,[R0, #+0]
+   \   00000008   0x2801             CMP      R0,#+1
+   \   0000000A   0xD065             BEQ.N    ??Handle_USBAsynchXfer_0
+    720            {
+    721              if (APP_Rx_ptr_out == APP_RX_DATA_SIZE)
+   \   0000000C   0x....             LDR.N    R0,??DataTable8_10
+   \   0000000E   0x6800             LDR      R0,[R0, #+0]
+   \   00000010   0xF5B0 0x6F00      CMP      R0,#+2048
+   \   00000014   0xD102             BNE.N    ??Handle_USBAsynchXfer_1
+    722              {
+    723                APP_Rx_ptr_out = 0;
+   \   00000016   0x2000             MOVS     R0,#+0
+   \   00000018   0x....             LDR.N    R1,??DataTable8_10
+   \   0000001A   0x6008             STR      R0,[R1, #+0]
+    724              }
+    725              
+    726              if(APP_Rx_ptr_out == APP_Rx_ptr_in) 
+   \                     ??Handle_USBAsynchXfer_1: (+1)
+   \   0000001C   0x....             LDR.N    R0,??DataTable8_10
+   \   0000001E   0x6800             LDR      R0,[R0, #+0]
+   \   00000020   0x....             LDR.N    R1,??DataTable8_13
+   \   00000022   0x6809             LDR      R1,[R1, #+0]
+   \   00000024   0x4288             CMP      R0,R1
+   \   00000026   0xD103             BNE.N    ??Handle_USBAsynchXfer_2
+    727              {
+    728                USB_Tx_State = 0; 
+   \   00000028   0x2000             MOVS     R0,#+0
+   \   0000002A   0x....             LDR.N    R1,??DataTable8_8
+   \   0000002C   0x7008             STRB     R0,[R1, #+0]
+    729                return;
+   \   0000002E   0xE053             B.N      ??Handle_USBAsynchXfer_3
+    730              }
+    731              
+    732              if(APP_Rx_ptr_out > APP_Rx_ptr_in) /* rollback */
+   \                     ??Handle_USBAsynchXfer_2: (+1)
+   \   00000030   0x....             LDR.N    R0,??DataTable8_13
+   \   00000032   0x6800             LDR      R0,[R0, #+0]
+   \   00000034   0x....             LDR.N    R1,??DataTable8_10
+   \   00000036   0x6809             LDR      R1,[R1, #+0]
+   \   00000038   0x4288             CMP      R0,R1
+   \   0000003A   0xD206             BCS.N    ??Handle_USBAsynchXfer_4
+    733              { 
+    734                APP_Rx_length = APP_RX_DATA_SIZE - APP_Rx_ptr_out;
+   \   0000003C   0x....             LDR.N    R0,??DataTable8_10
+   \   0000003E   0x6800             LDR      R0,[R0, #+0]
+   \   00000040   0xF5D0 0x6000      RSBS     R0,R0,#+2048
+   \   00000044   0x....             LDR.N    R1,??DataTable8_9
+   \   00000046   0x6008             STR      R0,[R1, #+0]
+   \   00000048   0xE006             B.N      ??Handle_USBAsynchXfer_5
+    735              
+    736              }
+    737              else 
+    738              {
+    739                APP_Rx_length = APP_Rx_ptr_in - APP_Rx_ptr_out;
+   \                     ??Handle_USBAsynchXfer_4: (+1)
+   \   0000004A   0x....             LDR.N    R0,??DataTable8_13
+   \   0000004C   0x6800             LDR      R0,[R0, #+0]
+   \   0000004E   0x....             LDR.N    R1,??DataTable8_10
+   \   00000050   0x6809             LDR      R1,[R1, #+0]
+   \   00000052   0x1A40             SUBS     R0,R0,R1
+   \   00000054   0x....             LDR.N    R1,??DataTable8_9
+   \   00000056   0x6008             STR      R0,[R1, #+0]
+    740               
+    741              }
+    742          #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
+    743               APP_Rx_length &= ~0x03;
+    744          #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
+    745              
+    746              if (APP_Rx_length > CDC_DATA_IN_PACKET_SIZE)
+   \                     ??Handle_USBAsynchXfer_5: (+1)
+   \   00000058   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   0000005C   0xF8B0 0x0039      LDRH     R0,[R0, #+57]
+   \   00000060   0x....             LDR.N    R1,??DataTable8_9
+   \   00000062   0x6809             LDR      R1,[R1, #+0]
+   \   00000064   0x4288             CMP      R0,R1
+   \   00000066   0xD21B             BCS.N    ??Handle_USBAsynchXfer_6
+    747              {
+    748                USB_Tx_ptr = APP_Rx_ptr_out;
+   \   00000068   0x....             LDR.N    R0,??DataTable8_10
+   \   0000006A   0x6800             LDR      R0,[R0, #+0]
+   \   0000006C   0x0005             MOVS     R5,R0
+    749                USB_Tx_length = CDC_DATA_IN_PACKET_SIZE;
+   \   0000006E   0xF8D4 0x05EC      LDR      R0,[R4, #+1516]
+   \   00000072   0xF8B0 0x0039      LDRH     R0,[R0, #+57]
+   \   00000076   0x0006             MOVS     R6,R0
+    750                
+    751                APP_Rx_ptr_out += CDC_DATA_IN_PACKET_SIZE;	
+   \   00000078   0x....             LDR.N    R0,??DataTable8_10
+   \   0000007A   0x6800             LDR      R0,[R0, #+0]
+   \   0000007C   0xF8D4 0x15EC      LDR      R1,[R4, #+1516]
+   \   00000080   0xF8B1 0x1039      LDRH     R1,[R1, #+57]
+   \   00000084   0xFA10 0xF081      UXTAH    R0,R0,R1
+   \   00000088   0x....             LDR.N    R1,??DataTable8_10
+   \   0000008A   0x6008             STR      R0,[R1, #+0]
+    752                APP_Rx_length -= CDC_DATA_IN_PACKET_SIZE;
+   \   0000008C   0x....             LDR.N    R0,??DataTable8_9
+   \   0000008E   0x6800             LDR      R0,[R0, #+0]
+   \   00000090   0xF8D4 0x15EC      LDR      R1,[R4, #+1516]
+   \   00000094   0xF8B1 0x1039      LDRH     R1,[R1, #+57]
+   \   00000098   0x1A40             SUBS     R0,R0,R1
+   \   0000009A   0x....             LDR.N    R1,??DataTable8_9
+   \   0000009C   0x6008             STR      R0,[R1, #+0]
+   \   0000009E   0xE00F             B.N      ??Handle_USBAsynchXfer_7
+    753              }
+    754              else
+    755              {
+    756                USB_Tx_ptr = APP_Rx_ptr_out;
+   \                     ??Handle_USBAsynchXfer_6: (+1)
+   \   000000A0   0x....             LDR.N    R0,??DataTable8_10
+   \   000000A2   0x6800             LDR      R0,[R0, #+0]
+   \   000000A4   0x0005             MOVS     R5,R0
+    757                USB_Tx_length = APP_Rx_length;
+   \   000000A6   0x....             LDR.N    R0,??DataTable8_9
+   \   000000A8   0x6800             LDR      R0,[R0, #+0]
+   \   000000AA   0x0006             MOVS     R6,R0
+    758                
+    759                APP_Rx_ptr_out += APP_Rx_length;
+   \   000000AC   0x....             LDR.N    R0,??DataTable8_10
+   \   000000AE   0x6800             LDR      R0,[R0, #+0]
+   \   000000B0   0x....             LDR.N    R1,??DataTable8_9
+   \   000000B2   0x6809             LDR      R1,[R1, #+0]
+   \   000000B4   0x1808             ADDS     R0,R1,R0
+   \   000000B6   0x....             LDR.N    R1,??DataTable8_10
+   \   000000B8   0x6008             STR      R0,[R1, #+0]
+    760                APP_Rx_length = 0;
+   \   000000BA   0x2000             MOVS     R0,#+0
+   \   000000BC   0x....             LDR.N    R1,??DataTable8_9
+   \   000000BE   0x6008             STR      R0,[R1, #+0]
+    761              }
+    762              USB_Tx_State = 1; 
+   \                     ??Handle_USBAsynchXfer_7: (+1)
+   \   000000C0   0x2001             MOVS     R0,#+1
+   \   000000C2   0x....             LDR.N    R1,??DataTable8_8
+   \   000000C4   0x7008             STRB     R0,[R1, #+0]
+    763          
+    764              DCD_EP_Tx (pdev,
+    765                         CDC_IN_EP,
+    766                         (uint8_t*)&APP_Rx_Buffer[USB_Tx_ptr],
+    767                         USB_Tx_length);
+   \   000000C6   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   000000C8   0x0033             MOVS     R3,R6
+   \   000000CA   0x....             LDR.N    R0,??DataTable8_11
+   \   000000CC   0xB2AD             UXTH     R5,R5            ;; ZeroExt  R5,R5,#+16,#+16
+   \   000000CE   0x182A             ADDS     R2,R5,R0
+   \   000000D0   0x2181             MOVS     R1,#+129
+   \   000000D2   0x0020             MOVS     R0,R4
+   \   000000D4   0x.... 0x....      BL       DCD_EP_Tx
+    768            }  
+    769            
+    770          }
+   \                     ??Handle_USBAsynchXfer_0: (+1)
+   \                     ??Handle_USBAsynchXfer_3: (+1)
+   \   000000D8   0xBD70             POP      {R4-R6,PC}       ;; return
+    771          
+    772          /**
+    773            * @brief  USBD_cdc_GetCfgDesc 
+    774            *         Return configuration descriptor
+    775            * @param  speed : current device speed
+    776            * @param  length : pointer data length
+    777            * @retval pointer to descriptor buffer
+    778            */
+
+   \                                 In section .text, align 2, keep-with-next
+    779          static uint8_t  *USBD_cdc_GetCfgDesc (uint8_t speed, uint16_t *length)
+    780          {
+   \                     USBD_cdc_GetCfgDesc: (+1)
+   \   00000000   0x0002             MOVS     R2,R0
+    781            *length = sizeof (usbd_cdc_CfgDesc);
+   \   00000002   0x2043             MOVS     R0,#+67
+   \   00000004   0x8008             STRH     R0,[R1, #+0]
+    782            return usbd_cdc_CfgDesc;
+   \   00000006   0x....             LDR.N    R0,??DataTable8_14
+   \   00000008   0x4770             BX       LR               ;; return
+    783          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8:
+   \   00000000   0x........         DC32     USBD_DeviceDesc
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_1:
+   \   00000000   0x........         DC32     VCP_fops
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_2:
+   \   00000000   0x........         DC32     USB_Rx_Buffer
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_3:
+   \   00000000   0x........         DC32     CmdBuff
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_4:
+   \   00000000   0x........         DC32     cdcCmd
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_5:
+   \   00000000   0x........         DC32     cdcLen
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_6:
+   \   00000000   0x........         DC32     usbd_cdc_CfgDesc+0x12
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_7:
+   \   00000000   0x........         DC32     usbd_cdc_AltSet
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_8:
+   \   00000000   0x........         DC32     USB_Tx_State
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_9:
+   \   00000000   0x........         DC32     APP_Rx_length
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_10:
+   \   00000000   0x........         DC32     APP_Rx_ptr_out
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_11:
+   \   00000000   0x........         DC32     APP_Rx_Buffer
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_12:
+   \   00000000   0x........         DC32     ??FrameCount
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_13:
+   \   00000000   0x........         DC32     APP_Rx_ptr_in
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable8_14:
+   \   00000000   0x........         DC32     usbd_cdc_CfgDesc
+    784          
+    785          /**
+    786            * @brief  USBD_cdc_GetCfgDesc 
+    787            *         Return configuration descriptor
+    788            * @param  speed : current device speed
+    789            * @param  length : pointer data length
+    790            * @retval pointer to descriptor buffer
+    791            */
+    792          #ifdef USE_USB_OTG_HS 
+    793          static uint8_t  *USBD_cdc_GetOtherCfgDesc (uint8_t speed, uint16_t *length)
+    794          {
+    795            *length = sizeof (usbd_cdc_OtherCfgDesc);
+    796            return usbd_cdc_OtherCfgDesc;
+    797          }
+    798          #endif
+    799          /**
+    800            * @}
+    801            */ 
+    802          
+    803          /**
+    804            * @}
+    805            */ 
+    806          
+    807          /**
+    808            * @}
+    809            */ 
+    810          
+    811          /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      16   Handle_USBAsynchXfer
+        16   -> DCD_EP_Tx
+       0   USBD_cdc_GetCfgDesc
+      24   usbd_cdc_DataIn
+        24   -> DCD_EP_Tx
+      16   usbd_cdc_DataOut
+        16   -- Indirect call
+        16   -> DCD_EP_PrepareRx
+      16   usbd_cdc_DeInit
+        16   -- Indirect call
+        16   -> DCD_EP_Close
+       8   usbd_cdc_EP0_RxReady
+         8   -- Indirect call
+      16   usbd_cdc_Init
+        16   -- Indirect call
+        16   -> DCD_EP_Open
+        16   -> DCD_EP_PrepareRx
+       8   usbd_cdc_SOF
+         8   -> Handle_USBAsynchXfer
+      24   usbd_cdc_Setup
+        24   -- Indirect call
+        24   -> USBD_CtlError
+        24   -> USBD_CtlPrepareRx
+        24   -> USBD_CtlSendData
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable8
+       4  ??DataTable8_1
+       4  ??DataTable8_10
+       4  ??DataTable8_11
+       4  ??DataTable8_12
+       4  ??DataTable8_13
+       4  ??DataTable8_14
+       4  ??DataTable8_2
+       4  ??DataTable8_3
+       4  ??DataTable8_4
+       4  ??DataTable8_5
+       4  ??DataTable8_6
+       4  ??DataTable8_7
+       4  ??DataTable8_8
+       4  ??DataTable8_9
+    2048  APP_Rx_Buffer
+       4  APP_Rx_length
+       4  APP_Rx_ptr_in
+       4  APP_Rx_ptr_out
+       8  CmdBuff
+       4  FrameCount
+     218  Handle_USBAsynchXfer
+      44  USBD_CDC_cb
+      10  USBD_cdc_GetCfgDesc
+      64  USB_Rx_Buffer
+       1  USB_Tx_State
+       4  cdcCmd
+       4  cdcLen
+       4  usbd_cdc_AltSet
+      68  usbd_cdc_CfgDesc
+     156  usbd_cdc_DataIn
+      54  usbd_cdc_DataOut
+      40  usbd_cdc_DeInit
+      38  usbd_cdc_EP0_RxReady
+      96  usbd_cdc_Init
+      68  usbd_cdc_OtherCfgDesc
+      34  usbd_cdc_SOF
+     206  usbd_cdc_Setup
+
+ 
+ 2 213 bytes in section .bss
+   116 bytes in section .data
+   912 bytes in section .text
+ 
+   912 bytes of CODE memory
+ 2 329 bytes of DATA memory
+
+Errors: none
+Warnings: 1

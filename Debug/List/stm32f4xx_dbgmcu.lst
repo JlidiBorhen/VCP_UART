@@ -1,0 +1,491 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.50.2.10312/W32 for ARM       06/May/2016  23:31:32
+# Copyright 1999-2015 IAR Systems AB.
+#
+#    Cpu mode     =  thumb
+#    Endian       =  little
+#    Source file  =  
+#        D:\IAR
+#        Workspace\STM32F407\STM32F4-Discovery_FW_V1.1.0\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_dbgmcu.c
+#    Command line =  
+#        "D:\IAR
+#        Workspace\STM32F407\STM32F4-Discovery_FW_V1.1.0\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_dbgmcu.c"
+#        -D USE_STDPERIPH_DRIVER -D STM32F4XX -D USE_FULL_ASSERT -lCN "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\List" -o "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\Obj" --no_cse --no_unroll
+#        --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling
+#        --debug --endian=little --cpu=Cortex-M4 -e --fpu=VFPv4_sp
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\INC\c\DLib_Config_Full.h" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\Include\" -I
+#        "D:\IAR Workspace\STM32F407\VCP_ESP\..\Utilities\STM32F4-Discovery\"
+#        -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\ST\STM32F4xx\Include\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_conf\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\cdc\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\otg\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\core\" -On --use_c++_inline -I
+#        "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\CMSIS\Include\" -D ARM_MATH_CM4
+#    List file    =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\Debug\List\stm32f4xx_dbgmcu.lst
+#    Object file  =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\Debug\Obj\stm32f4xx_dbgmcu.o
+#
+###############################################################################
+
+D:\IAR Workspace\STM32F407\STM32F4-Discovery_FW_V1.1.0\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_dbgmcu.c
+      1          /**
+      2            ******************************************************************************
+      3            * @file    stm32f4xx_dbgmcu.c
+      4            * @author  MCD Application Team
+      5            * @version V1.0.0
+      6            * @date    30-September-2011
+      7            * @brief   This file provides all the DBGMCU firmware functions.
+      8            ******************************************************************************
+      9            * @attention
+     10            *
+     11            * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+     12            * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+     13            * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+     14            * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+     15            * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+     16            * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+     17            *
+     18            * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+     19            ******************************************************************************
+     20            */
+     21          
+     22          /* Includes ------------------------------------------------------------------*/
+     23          #include "stm32f4xx_dbgmcu.h"
+     24          
+     25          /** @addtogroup STM32F4xx_StdPeriph_Driver
+     26            * @{
+     27            */
+     28          
+     29          /** @defgroup DBGMCU 
+     30            * @brief DBGMCU driver modules
+     31            * @{
+     32            */ 
+     33          
+     34          /* Private typedef -----------------------------------------------------------*/
+     35          /* Private define ------------------------------------------------------------*/
+     36          #define IDCODE_DEVID_MASK    ((uint32_t)0x00000FFF)
+     37          
+     38          /* Private macro -------------------------------------------------------------*/
+     39          /* Private variables ---------------------------------------------------------*/
+     40          /* Private function prototypes -----------------------------------------------*/
+     41          /* Private functions ---------------------------------------------------------*/
+     42          
+     43          /** @defgroup DBGMCU_Private_Functions
+     44            * @{
+     45            */ 
+     46          
+     47          /**
+     48            * @brief  Returns the device revision identifier.
+     49            * @param  None
+     50            * @retval Device revision identifier
+     51            */
+
+   \                                 In section .text, align 2, keep-with-next
+     52          uint32_t DBGMCU_GetREVID(void)
+     53          {
+     54             return(DBGMCU->IDCODE >> 16);
+   \                     DBGMCU_GetREVID: (+1)
+   \   00000000   0x....             LDR.N    R0,??DataTable4  ;; 0xe0042000
+   \   00000002   0x6800             LDR      R0,[R0, #+0]
+   \   00000004   0x0C00             LSRS     R0,R0,#+16
+   \   00000006   0x4770             BX       LR               ;; return
+     55          }
+     56          
+     57          /**
+     58            * @brief  Returns the device identifier.
+     59            * @param  None
+     60            * @retval Device identifier
+     61            */
+
+   \                                 In section .text, align 2, keep-with-next
+     62          uint32_t DBGMCU_GetDEVID(void)
+     63          {
+     64             return(DBGMCU->IDCODE & IDCODE_DEVID_MASK);
+   \                     DBGMCU_GetDEVID: (+1)
+   \   00000000   0x....             LDR.N    R0,??DataTable4  ;; 0xe0042000
+   \   00000002   0x6800             LDR      R0,[R0, #+0]
+   \   00000004   0x0500             LSLS     R0,R0,#+20       ;; ZeroExtS R0,R0,#+20,#+20
+   \   00000006   0x0D00             LSRS     R0,R0,#+20
+   \   00000008   0x4770             BX       LR               ;; return
+     65          }
+     66          
+     67          /**
+     68            * @brief  Configures low power mode behavior when the MCU is in Debug mode.
+     69            * @param  DBGMCU_Periph: specifies the low power mode.
+     70            *   This parameter can be any combination of the following values:
+     71            *     @arg DBGMCU_SLEEP: Keep debugger connection during SLEEP mode              
+     72            *     @arg DBGMCU_STOP: Keep debugger connection during STOP mode               
+     73            *     @arg DBGMCU_STANDBY: Keep debugger connection during STANDBY mode        
+     74            * @param  NewState: new state of the specified low power mode in Debug mode.
+     75            *   This parameter can be: ENABLE or DISABLE.
+     76            * @retval None
+     77            */
+
+   \                                 In section .text, align 2, keep-with-next
+     78          void DBGMCU_Config(uint32_t DBGMCU_Periph, FunctionalState NewState)
+     79          {
+   \                     DBGMCU_Config: (+1)
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+     80            /* Check the parameters */
+     81            assert_param(IS_DBGMCU_PERIPH(DBGMCU_Periph));
+   \   00000006   0x08E0             LSRS     R0,R4,#+3
+   \   00000008   0x00C0             LSLS     R0,R0,#+3
+   \   0000000A   0x2800             CMP      R0,#+0
+   \   0000000C   0xD101             BNE.N    ??DBGMCU_Config_0
+   \   0000000E   0x2C00             CMP      R4,#+0
+   \   00000010   0xD103             BNE.N    ??DBGMCU_Config_1
+   \                     ??DBGMCU_Config_0: (+1)
+   \   00000012   0x2151             MOVS     R1,#+81
+   \   00000014   0x....             LDR.N    R0,??DataTable4_1
+   \   00000016   0x.... 0x....      BL       assert_failed
+     82            assert_param(IS_FUNCTIONAL_STATE(NewState));
+   \                     ??DBGMCU_Config_1: (+1)
+   \   0000001A   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   0000001C   0x2D00             CMP      R5,#+0
+   \   0000001E   0xD006             BEQ.N    ??DBGMCU_Config_2
+   \   00000020   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   00000022   0x2D01             CMP      R5,#+1
+   \   00000024   0xD003             BEQ.N    ??DBGMCU_Config_2
+   \   00000026   0x2152             MOVS     R1,#+82
+   \   00000028   0x....             LDR.N    R0,??DataTable4_1
+   \   0000002A   0x.... 0x....      BL       assert_failed
+     83            if (NewState != DISABLE)
+   \                     ??DBGMCU_Config_2: (+1)
+   \   0000002E   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   00000030   0x2D00             CMP      R5,#+0
+   \   00000032   0xD005             BEQ.N    ??DBGMCU_Config_3
+     84            {
+     85              DBGMCU->CR |= DBGMCU_Periph;
+   \   00000034   0x....             LDR.N    R0,??DataTable4_2  ;; 0xe0042004
+   \   00000036   0x6800             LDR      R0,[R0, #+0]
+   \   00000038   0x4320             ORRS     R0,R4,R0
+   \   0000003A   0x....             LDR.N    R1,??DataTable4_2  ;; 0xe0042004
+   \   0000003C   0x6008             STR      R0,[R1, #+0]
+   \   0000003E   0xE004             B.N      ??DBGMCU_Config_4
+     86            }
+     87            else
+     88            {
+     89              DBGMCU->CR &= ~DBGMCU_Periph;
+   \                     ??DBGMCU_Config_3: (+1)
+   \   00000040   0x....             LDR.N    R0,??DataTable4_2  ;; 0xe0042004
+   \   00000042   0x6800             LDR      R0,[R0, #+0]
+   \   00000044   0x43A0             BICS     R0,R0,R4
+   \   00000046   0x....             LDR.N    R1,??DataTable4_2  ;; 0xe0042004
+   \   00000048   0x6008             STR      R0,[R1, #+0]
+     90            }
+     91          }
+   \                     ??DBGMCU_Config_4: (+1)
+   \   0000004A   0xBD31             POP      {R0,R4,R5,PC}    ;; return
+     92          
+     93          /**
+     94            * @brief  Configures APB1 peripheral behavior when the MCU is in Debug mode.
+     95            * @param  DBGMCU_Periph: specifies the APB1 peripheral.
+     96            *   This parameter can be any combination of the following values:        
+     97            *     @arg DBGMCU_TIM2_STOP: TIM2 counter stopped when Core is halted          
+     98            *     @arg DBGMCU_TIM3_STOP: TIM3 counter stopped when Core is halted          
+     99            *     @arg DBGMCU_TIM4_STOP: TIM4 counter stopped when Core is halted
+    100            *     @arg DBGMCU_TIM5_STOP: TIM5 counter stopped when Core is halted          
+    101            *     @arg DBGMCU_TIM6_STOP: TIM6 counter stopped when Core is halted          
+    102            *     @arg DBGMCU_TIM7_STOP: TIM7 counter stopped when Core is halted
+    103            *     @arg DBGMCU_TIM12_STOP: TIM12 counter stopped when Core is halted  
+    104            *     @arg DBGMCU_TIM13_STOP: TIM13 counter stopped when Core is halted  
+    105            *     @arg DBGMCU_TIM14_STOP: TIM14 counter stopped when Core is halted 
+    106            *     @arg DBGMCU_RTC_STOP: RTC Calendar and Wakeup counter stopped when Core is halted.                                                                                
+    107            *     @arg DBGMCU_WWDG_STOP: Debug WWDG stopped when Core is halted
+    108            *     @arg DBGMCU_IWDG_STOP: Debug IWDG stopped when Core is halted        
+    109            *     @arg DBGMCU_I2C1_SMBUS_TIMEOUT: I2C1 SMBUS timeout mode stopped when Core is halted
+    110            *     @arg DBGMCU_I2C2_SMBUS_TIMEOUT: I2C2 SMBUS timeout mode stopped when Core is halted
+    111            *     @arg DBGMCU_I2C3_SMBUS_TIMEOUT: I2C3 SMBUS timeout mode stopped when Core is halted
+    112            *     @arg DBGMCU_CAN2_STOP: Debug CAN1 stopped when Core is halted           
+    113            *     @arg DBGMCU_CAN1_STOP: Debug CAN2 stopped when Core is halted        
+    114            *   This parameter can be: ENABLE or DISABLE.
+    115            * @retval None
+    116            */
+
+   \                                 In section .text, align 2, keep-with-next
+    117          void DBGMCU_APB1PeriphConfig(uint32_t DBGMCU_Periph, FunctionalState NewState)
+    118          {
+   \                     DBGMCU_APB1PeriphConfig: (+1)
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+    119            /* Check the parameters */
+    120            assert_param(IS_DBGMCU_APB1PERIPH(DBGMCU_Periph));
+   \   00000006   0x....             LDR.N    R0,??DataTable4_3  ;; 0xf91fe200
+   \   00000008   0x4204             TST      R4,R0
+   \   0000000A   0xD101             BNE.N    ??DBGMCU_APB1PeriphConfig_0
+   \   0000000C   0x2C00             CMP      R4,#+0
+   \   0000000E   0xD103             BNE.N    ??DBGMCU_APB1PeriphConfig_1
+   \                     ??DBGMCU_APB1PeriphConfig_0: (+1)
+   \   00000010   0x2178             MOVS     R1,#+120
+   \   00000012   0x....             LDR.N    R0,??DataTable4_1
+   \   00000014   0x.... 0x....      BL       assert_failed
+    121            assert_param(IS_FUNCTIONAL_STATE(NewState));
+   \                     ??DBGMCU_APB1PeriphConfig_1: (+1)
+   \   00000018   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   0000001A   0x2D00             CMP      R5,#+0
+   \   0000001C   0xD006             BEQ.N    ??DBGMCU_APB1PeriphConfig_2
+   \   0000001E   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   00000020   0x2D01             CMP      R5,#+1
+   \   00000022   0xD003             BEQ.N    ??DBGMCU_APB1PeriphConfig_2
+   \   00000024   0x2179             MOVS     R1,#+121
+   \   00000026   0x....             LDR.N    R0,??DataTable4_1
+   \   00000028   0x.... 0x....      BL       assert_failed
+    122          
+    123            if (NewState != DISABLE)
+   \                     ??DBGMCU_APB1PeriphConfig_2: (+1)
+   \   0000002C   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   0000002E   0x2D00             CMP      R5,#+0
+   \   00000030   0xD005             BEQ.N    ??DBGMCU_APB1PeriphConfig_3
+    124            {
+    125              DBGMCU->APB1FZ |= DBGMCU_Periph;
+   \   00000032   0x....             LDR.N    R0,??DataTable4_4  ;; 0xe0042008
+   \   00000034   0x6800             LDR      R0,[R0, #+0]
+   \   00000036   0x4320             ORRS     R0,R4,R0
+   \   00000038   0x....             LDR.N    R1,??DataTable4_4  ;; 0xe0042008
+   \   0000003A   0x6008             STR      R0,[R1, #+0]
+   \   0000003C   0xE004             B.N      ??DBGMCU_APB1PeriphConfig_4
+    126            }
+    127            else
+    128            {
+    129              DBGMCU->APB1FZ &= ~DBGMCU_Periph;
+   \                     ??DBGMCU_APB1PeriphConfig_3: (+1)
+   \   0000003E   0x....             LDR.N    R0,??DataTable4_4  ;; 0xe0042008
+   \   00000040   0x6800             LDR      R0,[R0, #+0]
+   \   00000042   0x43A0             BICS     R0,R0,R4
+   \   00000044   0x....             LDR.N    R1,??DataTable4_4  ;; 0xe0042008
+   \   00000046   0x6008             STR      R0,[R1, #+0]
+    130            }
+    131          }
+   \                     ??DBGMCU_APB1PeriphConfig_4: (+1)
+   \   00000048   0xBD31             POP      {R0,R4,R5,PC}    ;; return
+    132          
+    133          /**
+    134            * @brief  Configures APB2 peripheral behavior when the MCU is in Debug mode.
+    135            * @param  DBGMCU_Periph: specifies the APB2 peripheral.
+    136            *   This parameter can be any combination of the following values:       
+    137            *     @arg DBGMCU_TIM1_STOP: TIM1 counter stopped when Core is halted                
+    138            *     @arg DBGMCU_TIM8_STOP: TIM8 counter stopped when Core is halted
+    139            *     @arg DBGMCU_TIM9_STOP: TIM9 counter stopped when Core is halted   
+    140            *     @arg DBGMCU_TIM10_STOP: TIM10 counter stopped when Core is halted   
+    141            *     @arg DBGMCU_TIM11_STOP: TIM11 counter stopped when Core is halted                                                                                  
+    142            * @param  NewState: new state of the specified peripheral in Debug mode.
+    143            *   This parameter can be: ENABLE or DISABLE.
+    144            * @retval None
+    145            */
+
+   \                                 In section .text, align 2, keep-with-next
+    146          void DBGMCU_APB2PeriphConfig(uint32_t DBGMCU_Periph, FunctionalState NewState)
+    147          {
+   \                     DBGMCU_APB2PeriphConfig: (+1)
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+    148            /* Check the parameters */
+    149            assert_param(IS_DBGMCU_APB2PERIPH(DBGMCU_Periph));
+   \   00000006   0x....             LDR.N    R0,??DataTable4_5  ;; 0xfff8fffc
+   \   00000008   0x4204             TST      R4,R0
+   \   0000000A   0xD101             BNE.N    ??DBGMCU_APB2PeriphConfig_0
+   \   0000000C   0x2C00             CMP      R4,#+0
+   \   0000000E   0xD103             BNE.N    ??DBGMCU_APB2PeriphConfig_1
+   \                     ??DBGMCU_APB2PeriphConfig_0: (+1)
+   \   00000010   0x2195             MOVS     R1,#+149
+   \   00000012   0x....             LDR.N    R0,??DataTable4_1
+   \   00000014   0x.... 0x....      BL       assert_failed
+    150            assert_param(IS_FUNCTIONAL_STATE(NewState));
+   \                     ??DBGMCU_APB2PeriphConfig_1: (+1)
+   \   00000018   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   0000001A   0x2D00             CMP      R5,#+0
+   \   0000001C   0xD006             BEQ.N    ??DBGMCU_APB2PeriphConfig_2
+   \   0000001E   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   00000020   0x2D01             CMP      R5,#+1
+   \   00000022   0xD003             BEQ.N    ??DBGMCU_APB2PeriphConfig_2
+   \   00000024   0x2196             MOVS     R1,#+150
+   \   00000026   0x....             LDR.N    R0,??DataTable4_1
+   \   00000028   0x.... 0x....      BL       assert_failed
+    151          
+    152            if (NewState != DISABLE)
+   \                     ??DBGMCU_APB2PeriphConfig_2: (+1)
+   \   0000002C   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   0000002E   0x2D00             CMP      R5,#+0
+   \   00000030   0xD005             BEQ.N    ??DBGMCU_APB2PeriphConfig_3
+    153            {
+    154              DBGMCU->APB2FZ |= DBGMCU_Periph;
+   \   00000032   0x....             LDR.N    R0,??DataTable4_6  ;; 0xe004200c
+   \   00000034   0x6800             LDR      R0,[R0, #+0]
+   \   00000036   0x4320             ORRS     R0,R4,R0
+   \   00000038   0x....             LDR.N    R1,??DataTable4_6  ;; 0xe004200c
+   \   0000003A   0x6008             STR      R0,[R1, #+0]
+   \   0000003C   0xE004             B.N      ??DBGMCU_APB2PeriphConfig_4
+    155            }
+    156            else
+    157            {
+    158              DBGMCU->APB2FZ &= ~DBGMCU_Periph;
+   \                     ??DBGMCU_APB2PeriphConfig_3: (+1)
+   \   0000003E   0x....             LDR.N    R0,??DataTable4_6  ;; 0xe004200c
+   \   00000040   0x6800             LDR      R0,[R0, #+0]
+   \   00000042   0x43A0             BICS     R0,R0,R4
+   \   00000044   0x....             LDR.N    R1,??DataTable4_6  ;; 0xe004200c
+   \   00000046   0x6008             STR      R0,[R1, #+0]
+    159            }
+    160          }
+   \                     ??DBGMCU_APB2PeriphConfig_4: (+1)
+   \   00000048   0xBD31             POP      {R0,R4,R5,PC}    ;; return
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable4:
+   \   00000000   0xE0042000         DC32     0xe0042000
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable4_1:
+   \   00000000   0x........         DC32     ?_0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable4_2:
+   \   00000000   0xE0042004         DC32     0xe0042004
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable4_3:
+   \   00000000   0xF91FE200         DC32     0xf91fe200
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable4_4:
+   \   00000000   0xE0042008         DC32     0xe0042008
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable4_5:
+   \   00000000   0xFFF8FFFC         DC32     0xfff8fffc
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable4_6:
+   \   00000000   0xE004200C         DC32     0xe004200c
+
+   \                                 In section .rodata, align 4
+   \                     ?_0:
+   \   00000000   0x44 0x3A          DC8 44H, 3AH, 5CH, 49H, 41H, 52H, 20H, 57H
+   \              0x5C 0x49    
+   \              0x41 0x52    
+   \              0x20 0x57    
+   \   00000008   0x6F 0x72          DC8 6FH, 72H, 6BH, 73H, 70H, 61H, 63H, 65H
+   \              0x6B 0x73    
+   \              0x70 0x61    
+   \              0x63 0x65    
+   \   00000010   0x5C 0x53          DC8 5CH, 53H, 54H, 4DH, 33H, 32H, 46H, 34H
+   \              0x54 0x4D    
+   \              0x33 0x32    
+   \              0x46 0x34    
+   \   00000018   0x30 0x37          DC8 30H, 37H, 5CH, 53H, 54H, 4DH, 33H, 32H
+   \              0x5C 0x53    
+   \              0x54 0x4D    
+   \              0x33 0x32    
+   \   00000020   0x46 0x34          DC8 46H, 34H, 2DH, 44H, 69H, 73H, 63H, 6FH
+   \              0x2D 0x44    
+   \              0x69 0x73    
+   \              0x63 0x6F    
+   \   00000028   0x76 0x65          DC8 76H, 65H, 72H, 79H, 5FH, 46H, 57H, 5FH
+   \              0x72 0x79    
+   \              0x5F 0x46    
+   \              0x57 0x5F    
+   \   00000030   0x56 0x31          DC8 56H, 31H, 2EH, 31H, 2EH, 30H, 5CH, 4CH
+   \              0x2E 0x31    
+   \              0x2E 0x30    
+   \              0x5C 0x4C    
+   \   00000038   0x69 0x62          DC8 69H, 62H, 72H, 61H, 72H, 69H, 65H, 73H
+   \              0x72 0x61    
+   \              0x72 0x69    
+   \              0x65 0x73    
+   \   00000040   0x5C 0x53          DC8 5CH, 53H, 54H, 4DH, 33H, 32H, 46H, 34H
+   \              0x54 0x4D    
+   \              0x33 0x32    
+   \              0x46 0x34    
+   \   00000048   0x78 0x78          DC8 78H, 78H, 5FH, 53H, 74H, 64H, 50H, 65H
+   \              0x5F 0x53    
+   \              0x74 0x64    
+   \              0x50 0x65    
+   \   00000050   0x72 0x69          DC8 72H, 69H, 70H, 68H, 5FH, 44H, 72H, 69H
+   \              0x70 0x68    
+   \              0x5F 0x44    
+   \              0x72 0x69    
+   \   00000058   0x76 0x65          DC8 76H, 65H, 72H, 5CH, 73H, 72H, 63H, 5CH
+   \              0x72 0x5C    
+   \              0x73 0x72    
+   \              0x63 0x5C    
+   \   00000060   0x73 0x74          DC8 73H, 74H, 6DH, 33H, 32H, 66H, 34H, 78H
+   \              0x6D 0x33    
+   \              0x32 0x66    
+   \              0x34 0x78    
+   \   00000068   0x78 0x5F          DC8 78H, 5FH, 64H, 62H, 67H, 6DH, 63H, 75H
+   \              0x64 0x62    
+   \              0x67 0x6D    
+   \              0x63 0x75    
+   \   00000070   0x2E 0x63          DC8 2EH, 63H, 0
+   \              0x00         
+   \   00000073   0x00               DC8 0
+    161          
+    162          /**
+    163            * @}
+    164            */ 
+    165          
+    166          /**
+    167            * @}
+    168            */ 
+    169          
+    170          /**
+    171            * @}
+    172            */ 
+    173          
+    174          /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      16   DBGMCU_APB1PeriphConfig
+        16   -> assert_failed
+      16   DBGMCU_APB2PeriphConfig
+        16   -> assert_failed
+      16   DBGMCU_Config
+        16   -> assert_failed
+       0   DBGMCU_GetDEVID
+       0   DBGMCU_GetREVID
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable4
+       4  ??DataTable4_1
+       4  ??DataTable4_2
+       4  ??DataTable4_3
+       4  ??DataTable4_4
+       4  ??DataTable4_5
+       4  ??DataTable4_6
+     116  ?_0
+      74  DBGMCU_APB1PeriphConfig
+      74  DBGMCU_APB2PeriphConfig
+      76  DBGMCU_Config
+      10  DBGMCU_GetDEVID
+       8  DBGMCU_GetREVID
+
+ 
+ 116 bytes in section .rodata
+ 270 bytes in section .text
+ 
+ 270 bytes of CODE  memory
+ 116 bytes of CONST memory
+
+Errors: none
+Warnings: none

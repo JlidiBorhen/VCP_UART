@@ -1,0 +1,440 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.50.2.10312/W32 for ARM       06/May/2016  23:31:38
+# Copyright 1999-2015 IAR Systems AB.
+#
+#    Cpu mode     =  thumb
+#    Endian       =  little
+#    Source file  =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\usb_lib\core\usbd_ioreq.c
+#    Command line =  
+#        "D:\IAR Workspace\STM32F407\VCP_ESP\usb_lib\core\usbd_ioreq.c" -D
+#        USE_STDPERIPH_DRIVER -D STM32F4XX -D USE_FULL_ASSERT -lCN "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\List" -o "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\Obj" --no_cse --no_unroll
+#        --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling
+#        --debug --endian=little --cpu=Cortex-M4 -e --fpu=VFPv4_sp
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\INC\c\DLib_Config_Full.h" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\Include\" -I
+#        "D:\IAR Workspace\STM32F407\VCP_ESP\..\Utilities\STM32F4-Discovery\"
+#        -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\ST\STM32F4xx\Include\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_conf\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\cdc\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\otg\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\core\" -On --use_c++_inline -I
+#        "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\CMSIS\Include\" -D ARM_MATH_CM4
+#    List file    =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\Debug\List\usbd_ioreq.lst
+#    Object file  =  D:\IAR Workspace\STM32F407\VCP_ESP\Debug\Obj\usbd_ioreq.o
+#
+###############################################################################
+
+D:\IAR Workspace\STM32F407\VCP_ESP\usb_lib\core\usbd_ioreq.c
+      1          /**
+      2            ******************************************************************************
+      3            * @file    usbd_ioreq.c
+      4            * @author  MCD Application Team
+      5            * @version V1.0.0
+      6            * @date    22-July-2011
+      7            * @brief   This file provides the IO requests APIs for control endpoints.
+      8            ******************************************************************************
+      9            * @attention
+     10            *
+     11            * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+     12            * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+     13            * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+     14            * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+     15            * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+     16            * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+     17            *
+     18            * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+     19            ******************************************************************************
+     20            */ 
+     21          
+     22          /* Includes ------------------------------------------------------------------*/
+     23          #include "usbd_ioreq.h"
+     24          /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
+     25            * @{
+     26            */
+     27          
+     28          
+     29          /** @defgroup USBD_IOREQ 
+     30            * @brief control I/O requests module
+     31            * @{
+     32            */ 
+     33          
+     34          /** @defgroup USBD_IOREQ_Private_TypesDefinitions
+     35            * @{
+     36            */ 
+     37          /**
+     38            * @}
+     39            */ 
+     40          
+     41          
+     42          /** @defgroup USBD_IOREQ_Private_Defines
+     43            * @{
+     44            */ 
+     45          
+     46          /**
+     47            * @}
+     48            */ 
+     49          
+     50          
+     51          /** @defgroup USBD_IOREQ_Private_Macros
+     52            * @{
+     53            */ 
+     54          /**
+     55            * @}
+     56            */ 
+     57          
+     58          
+     59          /** @defgroup USBD_IOREQ_Private_Variables
+     60            * @{
+     61            */ 
+     62          
+     63          /**
+     64            * @}
+     65            */ 
+     66          
+     67          
+     68          /** @defgroup USBD_IOREQ_Private_FunctionPrototypes
+     69            * @{
+     70            */ 
+     71          /**
+     72            * @}
+     73            */ 
+     74          
+     75          
+     76          /** @defgroup USBD_IOREQ_Private_Functions
+     77            * @{
+     78            */ 
+     79          
+     80          /**
+     81          * @brief  USBD_CtlSendData
+     82          *         send data on the ctl pipe
+     83          * @param  pdev: device instance
+     84          * @param  buff: pointer to data buffer
+     85          * @param  len: length of data to be sent
+     86          * @retval status
+     87          */
+
+   \                                 In section .text, align 2, keep-with-next
+     88          USBD_Status  USBD_CtlSendData (USB_OTG_CORE_HANDLE  *pdev, 
+     89                                         uint8_t *pbuf,
+     90                                         uint16_t len)
+     91          {
+   \                     USBD_CtlSendData: (+1)
+   \   00000000   0xB5F8             PUSH     {R3-R7,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+   \   00000006   0x0016             MOVS     R6,R2
+     92            USBD_Status ret = USBD_OK;
+   \   00000008   0x2700             MOVS     R7,#+0
+     93            
+     94            pdev->dev.in_ep[0].total_data_len = len;
+   \   0000000A   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   0000000C   0xF8C4 0x6138      STR      R6,[R4, #+312]
+     95            pdev->dev.in_ep[0].rem_data_len   = len;
+   \   00000010   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   00000012   0xF8C4 0x6134      STR      R6,[R4, #+308]
+     96            pdev->dev.device_state = USB_OTG_EP0_DATA_IN;
+   \   00000016   0x2002             MOVS     R0,#+2
+   \   00000018   0xF884 0x0111      STRB     R0,[R4, #+273]
+     97          
+     98            DCD_EP_Tx (pdev, 0, pbuf, len);
+   \   0000001C   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   0000001E   0x0033             MOVS     R3,R6
+   \   00000020   0x002A             MOVS     R2,R5
+   \   00000022   0x2100             MOVS     R1,#+0
+   \   00000024   0x0020             MOVS     R0,R4
+   \   00000026   0x.... 0x....      BL       DCD_EP_Tx
+     99           
+    100            return ret;
+   \   0000002A   0x0038             MOVS     R0,R7
+   \   0000002C   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   0000002E   0xBDF2             POP      {R1,R4-R7,PC}    ;; return
+    101          }
+    102          
+    103          /**
+    104          * @brief  USBD_CtlContinueSendData
+    105          *         continue sending data on the ctl pipe
+    106          * @param  pdev: device instance
+    107          * @param  buff: pointer to data buffer
+    108          * @param  len: length of data to be sent
+    109          * @retval status
+    110          */
+
+   \                                 In section .text, align 2, keep-with-next
+    111          USBD_Status  USBD_CtlContinueSendData (USB_OTG_CORE_HANDLE  *pdev, 
+    112                                                 uint8_t *pbuf,
+    113                                                 uint16_t len)
+    114          {
+   \                     USBD_CtlContinueSendData: (+1)
+   \   00000000   0xB5F8             PUSH     {R3-R7,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+   \   00000006   0x0016             MOVS     R6,R2
+    115            USBD_Status ret = USBD_OK;
+   \   00000008   0x2700             MOVS     R7,#+0
+    116            
+    117            DCD_EP_Tx (pdev, 0, pbuf, len);
+   \   0000000A   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   0000000C   0x0033             MOVS     R3,R6
+   \   0000000E   0x002A             MOVS     R2,R5
+   \   00000010   0x2100             MOVS     R1,#+0
+   \   00000012   0x0020             MOVS     R0,R4
+   \   00000014   0x.... 0x....      BL       DCD_EP_Tx
+    118            
+    119            
+    120            return ret;
+   \   00000018   0x0038             MOVS     R0,R7
+   \   0000001A   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   0000001C   0xBDF2             POP      {R1,R4-R7,PC}    ;; return
+    121          }
+    122          
+    123          /**
+    124          * @brief  USBD_CtlPrepareRx
+    125          *         receive data on the ctl pipe
+    126          * @param  pdev: USB OTG device instance
+    127          * @param  buff: pointer to data buffer
+    128          * @param  len: length of data to be received
+    129          * @retval status
+    130          */
+
+   \                                 In section .text, align 2, keep-with-next
+    131          USBD_Status  USBD_CtlPrepareRx (USB_OTG_CORE_HANDLE  *pdev,
+    132                                            uint8_t *pbuf,                                  
+    133                                            uint16_t len)
+    134          {
+   \                     USBD_CtlPrepareRx: (+1)
+   \   00000000   0xB5F8             PUSH     {R3-R7,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+   \   00000006   0x0016             MOVS     R6,R2
+    135            USBD_Status ret = USBD_OK;
+   \   00000008   0x2700             MOVS     R7,#+0
+    136            
+    137            pdev->dev.out_ep[0].total_data_len = len;
+   \   0000000A   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   0000000C   0xF8C4 0x6390      STR      R6,[R4, #+912]
+    138            pdev->dev.out_ep[0].rem_data_len   = len;
+   \   00000010   0xB2B6             UXTH     R6,R6            ;; ZeroExt  R6,R6,#+16,#+16
+   \   00000012   0xF8C4 0x638C      STR      R6,[R4, #+908]
+    139            pdev->dev.device_state = USB_OTG_EP0_DATA_OUT;
+   \   00000016   0x2003             MOVS     R0,#+3
+   \   00000018   0xF884 0x0111      STRB     R0,[R4, #+273]
+    140            
+    141            DCD_EP_PrepareRx (pdev,
+    142                              0,
+    143                              pbuf,
+    144                              len);
+   \   0000001C   0x0033             MOVS     R3,R6
+   \   0000001E   0xB29B             UXTH     R3,R3            ;; ZeroExt  R3,R3,#+16,#+16
+   \   00000020   0x002A             MOVS     R2,R5
+   \   00000022   0x2100             MOVS     R1,#+0
+   \   00000024   0x0020             MOVS     R0,R4
+   \   00000026   0x.... 0x....      BL       DCD_EP_PrepareRx
+    145            
+    146          
+    147            return ret;
+   \   0000002A   0x0038             MOVS     R0,R7
+   \   0000002C   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   0000002E   0xBDF2             POP      {R1,R4-R7,PC}    ;; return
+    148          }
+    149          
+    150          /**
+    151          * @brief  USBD_CtlContinueRx
+    152          *         continue receive data on the ctl pipe
+    153          * @param  pdev: USB OTG device instance
+    154          * @param  buff: pointer to data buffer
+    155          * @param  len: length of data to be received
+    156          * @retval status
+    157          */
+
+   \                                 In section .text, align 2, keep-with-next
+    158          USBD_Status  USBD_CtlContinueRx (USB_OTG_CORE_HANDLE  *pdev, 
+    159                                                    uint8_t *pbuf,                                          
+    160                                                    uint16_t len)
+    161          {
+   \                     USBD_CtlContinueRx: (+1)
+   \   00000000   0xB5F8             PUSH     {R3-R7,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+   \   00000006   0x0016             MOVS     R6,R2
+    162            USBD_Status ret = USBD_OK;
+   \   00000008   0x2700             MOVS     R7,#+0
+    163            
+    164            DCD_EP_PrepareRx (pdev,
+    165                              0,                     
+    166                              pbuf,                         
+    167                              len);
+   \   0000000A   0x0033             MOVS     R3,R6
+   \   0000000C   0xB29B             UXTH     R3,R3            ;; ZeroExt  R3,R3,#+16,#+16
+   \   0000000E   0x002A             MOVS     R2,R5
+   \   00000010   0x2100             MOVS     R1,#+0
+   \   00000012   0x0020             MOVS     R0,R4
+   \   00000014   0x.... 0x....      BL       DCD_EP_PrepareRx
+    168            return ret;
+   \   00000018   0x0038             MOVS     R0,R7
+   \   0000001A   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   0000001C   0xBDF2             POP      {R1,R4-R7,PC}    ;; return
+    169          }
+    170          /**
+    171          * @brief  USBD_CtlSendStatus
+    172          *         send zero lzngth packet on the ctl pipe
+    173          * @param  pdev: USB OTG device instance
+    174          * @retval status
+    175          */
+
+   \                                 In section .text, align 2, keep-with-next
+    176          USBD_Status  USBD_CtlSendStatus (USB_OTG_CORE_HANDLE  *pdev)
+    177          {
+   \                     USBD_CtlSendStatus: (+1)
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    178            USBD_Status ret = USBD_OK;
+   \   00000004   0x2500             MOVS     R5,#+0
+    179            pdev->dev.device_state = USB_OTG_EP0_STATUS_IN;
+   \   00000006   0x2004             MOVS     R0,#+4
+   \   00000008   0xF884 0x0111      STRB     R0,[R4, #+273]
+    180            DCD_EP_Tx (pdev,
+    181                       0,
+    182                       NULL, 
+    183                       0); 
+   \   0000000C   0x2300             MOVS     R3,#+0
+   \   0000000E   0x2200             MOVS     R2,#+0
+   \   00000010   0x2100             MOVS     R1,#+0
+   \   00000012   0x0020             MOVS     R0,R4
+   \   00000014   0x.... 0x....      BL       DCD_EP_Tx
+    184            
+    185            USB_OTG_EP0_OutStart(pdev);  
+   \   00000018   0x0020             MOVS     R0,R4
+   \   0000001A   0x.... 0x....      BL       USB_OTG_EP0_OutStart
+    186            
+    187            return ret;
+   \   0000001E   0x0028             MOVS     R0,R5
+   \   00000020   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000022   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+    188          }
+    189          
+    190          /**
+    191          * @brief  USBD_CtlReceiveStatus
+    192          *         receive zero lzngth packet on the ctl pipe
+    193          * @param  pdev: USB OTG device instance
+    194          * @retval status
+    195          */
+
+   \                                 In section .text, align 2, keep-with-next
+    196          USBD_Status  USBD_CtlReceiveStatus (USB_OTG_CORE_HANDLE  *pdev)
+    197          {
+   \                     USBD_CtlReceiveStatus: (+1)
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    198            USBD_Status ret = USBD_OK;
+   \   00000004   0x2500             MOVS     R5,#+0
+    199            pdev->dev.device_state = USB_OTG_EP0_STATUS_OUT;  
+   \   00000006   0x2005             MOVS     R0,#+5
+   \   00000008   0xF884 0x0111      STRB     R0,[R4, #+273]
+    200            DCD_EP_PrepareRx ( pdev,
+    201                              0,
+    202                              NULL,
+    203                              0);  
+   \   0000000C   0x2300             MOVS     R3,#+0
+   \   0000000E   0x2200             MOVS     R2,#+0
+   \   00000010   0x2100             MOVS     R1,#+0
+   \   00000012   0x0020             MOVS     R0,R4
+   \   00000014   0x.... 0x....      BL       DCD_EP_PrepareRx
+    204          
+    205            USB_OTG_EP0_OutStart(pdev);
+   \   00000018   0x0020             MOVS     R0,R4
+   \   0000001A   0x.... 0x....      BL       USB_OTG_EP0_OutStart
+    206            
+    207            return ret;
+   \   0000001E   0x0028             MOVS     R0,R5
+   \   00000020   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000022   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+    208          }
+    209          
+    210          
+    211          /**
+    212          * @brief  USBD_GetRxCount
+    213          *         returns the received data length
+    214          * @param  pdev: USB OTG device instance
+    215          *         epnum: endpoint index
+    216          * @retval Rx Data blength
+    217          */
+
+   \                                 In section .text, align 2, keep-with-next
+    218          uint16_t  USBD_GetRxCount (USB_OTG_CORE_HANDLE  *pdev , uint8_t epnum)
+    219          {
+    220            return pdev->dev.out_ep[epnum].xfer_count;
+   \                     USBD_GetRxCount: (+1)
+   \   00000000   0xB2C9             UXTB     R1,R1            ;; ZeroExt  R1,R1,#+24,#+24
+   \   00000002   0x2228             MOVS     R2,#+40
+   \   00000004   0xFB02 0x0001      MLA      R0,R2,R1,R0
+   \   00000008   0xF8D0 0x0388      LDR      R0,[R0, #+904]
+   \   0000000C   0xB280             UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   0000000E   0x4770             BX       LR               ;; return
+    221          }
+    222          
+    223          /**
+    224            * @}
+    225            */ 
+    226          
+    227          
+    228          /**
+    229            * @}
+    230            */ 
+    231          
+    232          
+    233          /**
+    234            * @}
+    235            */ 
+    236          
+    237          /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      24   USBD_CtlContinueRx
+        24   -> DCD_EP_PrepareRx
+      24   USBD_CtlContinueSendData
+        24   -> DCD_EP_Tx
+      24   USBD_CtlPrepareRx
+        24   -> DCD_EP_PrepareRx
+      16   USBD_CtlReceiveStatus
+        16   -> DCD_EP_PrepareRx
+        16   -> USB_OTG_EP0_OutStart
+      24   USBD_CtlSendData
+        24   -> DCD_EP_Tx
+      16   USBD_CtlSendStatus
+        16   -> DCD_EP_Tx
+        16   -> USB_OTG_EP0_OutStart
+       0   USBD_GetRxCount
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      30  USBD_CtlContinueRx
+      30  USBD_CtlContinueSendData
+      48  USBD_CtlPrepareRx
+      36  USBD_CtlReceiveStatus
+      48  USBD_CtlSendData
+      36  USBD_CtlSendStatus
+      16  USBD_GetRxCount
+
+ 
+ 244 bytes in section .text
+ 
+ 244 bytes of CODE memory
+
+Errors: none
+Warnings: 1

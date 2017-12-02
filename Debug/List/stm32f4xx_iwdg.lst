@@ -1,0 +1,543 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.50.2.10312/W32 for ARM       06/May/2016  23:31:34
+# Copyright 1999-2015 IAR Systems AB.
+#
+#    Cpu mode     =  thumb
+#    Endian       =  little
+#    Source file  =  
+#        D:\IAR
+#        Workspace\STM32F407\STM32F4-Discovery_FW_V1.1.0\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_iwdg.c
+#    Command line =  
+#        "D:\IAR
+#        Workspace\STM32F407\STM32F4-Discovery_FW_V1.1.0\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_iwdg.c"
+#        -D USE_STDPERIPH_DRIVER -D STM32F4XX -D USE_FULL_ASSERT -lCN "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\List" -o "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\Debug\Obj" --no_cse --no_unroll
+#        --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling
+#        --debug --endian=little --cpu=Cortex-M4 -e --fpu=VFPv4_sp
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\INC\c\DLib_Config_Full.h" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\Include\" -I
+#        "D:\IAR Workspace\STM32F407\VCP_ESP\..\Utilities\STM32F4-Discovery\"
+#        -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\..\Libraries\CMSIS\ST\STM32F4xx\Include\"
+#        -I "D:\IAR Workspace\STM32F407\VCP_ESP\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_conf\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\cdc\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\otg\" -I "D:\IAR
+#        Workspace\STM32F407\VCP_ESP\usb_lib\core\" -On --use_c++_inline -I
+#        "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.3\arm\CMSIS\Include\" -D ARM_MATH_CM4
+#    List file    =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\Debug\List\stm32f4xx_iwdg.lst
+#    Object file  =  
+#        D:\IAR Workspace\STM32F407\VCP_ESP\Debug\Obj\stm32f4xx_iwdg.o
+#
+###############################################################################
+
+D:\IAR Workspace\STM32F407\STM32F4-Discovery_FW_V1.1.0\Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_iwdg.c
+      1          /**
+      2            ******************************************************************************
+      3            * @file    stm32f4xx_iwdg.c
+      4            * @author  MCD Application Team
+      5            * @version V1.0.0
+      6            * @date    30-September-2011
+      7            * @brief   This file provides firmware functions to manage the following 
+      8            *          functionalities of the Independent watchdog (IWDG) peripheral:           
+      9            *           - Prescaler and Counter configuration
+     10            *           - IWDG activation
+     11            *           - Flag management
+     12            *
+     13            *  @verbatim  
+     14            *  
+     15            *          ===================================================================
+     16            *                                     IWDG features
+     17            *          ===================================================================
+     18            *    
+     19            *          The IWDG can be started by either software or hardware (configurable
+     20            *          through option byte).
+     21            *            
+     22            *          The IWDG is clocked by its own dedicated low-speed clock (LSI) and
+     23            *          thus stays active even if the main clock fails.
+     24            *          Once the IWDG is started, the LSI is forced ON and cannot be disabled
+     25            *          (LSI cannot be disabled too), and the counter starts counting down from 
+     26            *          the reset value of 0xFFF. When it reaches the end of count value (0x000)
+     27            *          a system reset is generated.
+     28            *          The IWDG counter should be reloaded at regular intervals to prevent
+     29            *          an MCU reset.
+     30            *                           
+     31            *          The IWDG is implemented in the VDD voltage domain that is still functional
+     32            *          in STOP and STANDBY mode (IWDG reset can wake-up from STANDBY).          
+     33            *            
+     34            *          IWDGRST flag in RCC_CSR register can be used to inform when a IWDG
+     35            *          reset occurs.
+     36            *            
+     37            *          Min-max timeout value @32KHz (LSI): ~125us / ~32.7s
+     38            *          The IWDG timeout may vary due to LSI frequency dispersion. STM32F4xx
+     39            *          devices provide the capability to measure the LSI frequency (LSI clock
+     40            *          connected internally to TIM5 CH4 input capture). The measured value
+     41            *          can be used to have an IWDG timeout with an acceptable accuracy. 
+     42            *          For more information, please refer to the STM32F4xx Reference manual
+     43            *          
+     44            *                            
+     45            *          ===================================================================
+     46            *                                 How to use this driver
+     47            *          ===================================================================
+     48            *          1. Enable write access to IWDG_PR and IWDG_RLR registers using
+     49            *             IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable) function
+     50            *               
+     51            *          2. Configure the IWDG prescaler using IWDG_SetPrescaler() function
+     52            *            
+     53            *          3. Configure the IWDG counter value using IWDG_SetReload() function.
+     54            *             This value will be loaded in the IWDG counter each time the counter
+     55            *             is reloaded, then the IWDG will start counting down from this value.
+     56            *            
+     57            *          4. Start the IWDG using IWDG_Enable() function, when the IWDG is used
+     58            *             in software mode (no need to enable the LSI, it will be enabled
+     59            *             by hardware)
+     60            *             
+     61            *          5. Then the application program must reload the IWDG counter at regular
+     62            *             intervals during normal operation to prevent an MCU reset, using
+     63            *             IWDG_ReloadCounter() function.      
+     64            *          
+     65            *  @endverbatim
+     66            *    
+     67            ******************************************************************************
+     68            * @attention
+     69            *
+     70            * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
+     71            * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
+     72            * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
+     73            * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
+     74            * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
+     75            * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
+     76            *
+     77            * <h2><center>&copy; COPYRIGHT 2011 STMicroelectronics</center></h2>
+     78            ******************************************************************************
+     79            */
+     80          
+     81          /* Includes ------------------------------------------------------------------*/
+     82          #include "stm32f4xx_iwdg.h"
+     83          
+     84          /** @addtogroup STM32F4xx_StdPeriph_Driver
+     85            * @{
+     86            */
+     87          
+     88          /** @defgroup IWDG 
+     89            * @brief IWDG driver modules
+     90            * @{
+     91            */ 
+     92          
+     93          /* Private typedef -----------------------------------------------------------*/
+     94          /* Private define ------------------------------------------------------------*/
+     95          
+     96          /* KR register bit mask */
+     97          #define KR_KEY_RELOAD    ((uint16_t)0xAAAA)
+     98          #define KR_KEY_ENABLE    ((uint16_t)0xCCCC)
+     99          
+    100          /* Private macro -------------------------------------------------------------*/
+    101          /* Private variables ---------------------------------------------------------*/
+    102          /* Private function prototypes -----------------------------------------------*/
+    103          /* Private functions ---------------------------------------------------------*/
+    104          
+    105          /** @defgroup IWDG_Private_Functions
+    106            * @{
+    107            */
+    108          
+    109          /** @defgroup IWDG_Group1 Prescaler and Counter configuration functions
+    110           *  @brief   Prescaler and Counter configuration functions
+    111           *
+    112          @verbatim   
+    113           ===============================================================================
+    114                            Prescaler and Counter configuration functions
+    115           ===============================================================================  
+    116          
+    117          @endverbatim
+    118            * @{
+    119            */
+    120          
+    121          /**
+    122            * @brief  Enables or disables write access to IWDG_PR and IWDG_RLR registers.
+    123            * @param  IWDG_WriteAccess: new state of write access to IWDG_PR and IWDG_RLR registers.
+    124            *          This parameter can be one of the following values:
+    125            *            @arg IWDG_WriteAccess_Enable: Enable write access to IWDG_PR and IWDG_RLR registers
+    126            *            @arg IWDG_WriteAccess_Disable: Disable write access to IWDG_PR and IWDG_RLR registers
+    127            * @retval None
+    128            */
+
+   \                                 In section .text, align 2, keep-with-next
+    129          void IWDG_WriteAccessCmd(uint16_t IWDG_WriteAccess)
+    130          {
+   \                     IWDG_WriteAccessCmd: (+1)
+   \   00000000   0xB510             PUSH     {R4,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    131            /* Check the parameters */
+    132            assert_param(IS_IWDG_WRITE_ACCESS(IWDG_WriteAccess));
+   \   00000004   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   00000006   0xF245 0x5055      MOVW     R0,#+21845
+   \   0000000A   0x4284             CMP      R4,R0
+   \   0000000C   0xD006             BEQ.N    ??IWDG_WriteAccessCmd_0
+   \   0000000E   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   00000010   0x2C00             CMP      R4,#+0
+   \   00000012   0xD003             BEQ.N    ??IWDG_WriteAccessCmd_0
+   \   00000014   0x2184             MOVS     R1,#+132
+   \   00000016   0x....             LDR.N    R0,??DataTable5
+   \   00000018   0x.... 0x....      BL       assert_failed
+    133            IWDG->KR = IWDG_WriteAccess;
+   \                     ??IWDG_WriteAccessCmd_0: (+1)
+   \   0000001C   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   0000001E   0x....             LDR.N    R0,??DataTable5_1  ;; 0x40003000
+   \   00000020   0x6004             STR      R4,[R0, #+0]
+    134          }
+   \   00000022   0xBD10             POP      {R4,PC}          ;; return
+    135          
+    136          /**
+    137            * @brief  Sets IWDG Prescaler value.
+    138            * @param  IWDG_Prescaler: specifies the IWDG Prescaler value.
+    139            *          This parameter can be one of the following values:
+    140            *            @arg IWDG_Prescaler_4: IWDG prescaler set to 4
+    141            *            @arg IWDG_Prescaler_8: IWDG prescaler set to 8
+    142            *            @arg IWDG_Prescaler_16: IWDG prescaler set to 16
+    143            *            @arg IWDG_Prescaler_32: IWDG prescaler set to 32
+    144            *            @arg IWDG_Prescaler_64: IWDG prescaler set to 64
+    145            *            @arg IWDG_Prescaler_128: IWDG prescaler set to 128
+    146            *            @arg IWDG_Prescaler_256: IWDG prescaler set to 256
+    147            * @retval None
+    148            */
+
+   \                                 In section .text, align 2, keep-with-next
+    149          void IWDG_SetPrescaler(uint8_t IWDG_Prescaler)
+    150          {
+   \                     IWDG_SetPrescaler: (+1)
+   \   00000000   0xB510             PUSH     {R4,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    151            /* Check the parameters */
+    152            assert_param(IS_IWDG_PRESCALER(IWDG_Prescaler));
+   \   00000004   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000006   0x2C00             CMP      R4,#+0
+   \   00000008   0xD015             BEQ.N    ??IWDG_SetPrescaler_0
+   \   0000000A   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   0000000C   0x2C01             CMP      R4,#+1
+   \   0000000E   0xD012             BEQ.N    ??IWDG_SetPrescaler_0
+   \   00000010   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000012   0x2C02             CMP      R4,#+2
+   \   00000014   0xD00F             BEQ.N    ??IWDG_SetPrescaler_0
+   \   00000016   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000018   0x2C03             CMP      R4,#+3
+   \   0000001A   0xD00C             BEQ.N    ??IWDG_SetPrescaler_0
+   \   0000001C   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   0000001E   0x2C04             CMP      R4,#+4
+   \   00000020   0xD009             BEQ.N    ??IWDG_SetPrescaler_0
+   \   00000022   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000024   0x2C05             CMP      R4,#+5
+   \   00000026   0xD006             BEQ.N    ??IWDG_SetPrescaler_0
+   \   00000028   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   0000002A   0x2C06             CMP      R4,#+6
+   \   0000002C   0xD003             BEQ.N    ??IWDG_SetPrescaler_0
+   \   0000002E   0x2198             MOVS     R1,#+152
+   \   00000030   0x....             LDR.N    R0,??DataTable5
+   \   00000032   0x.... 0x....      BL       assert_failed
+    153            IWDG->PR = IWDG_Prescaler;
+   \                     ??IWDG_SetPrescaler_0: (+1)
+   \   00000036   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000038   0x....             LDR.N    R0,??DataTable5_2  ;; 0x40003004
+   \   0000003A   0x6004             STR      R4,[R0, #+0]
+    154          }
+   \   0000003C   0xBD10             POP      {R4,PC}          ;; return
+    155          
+    156          /**
+    157            * @brief  Sets IWDG Reload value.
+    158            * @param  Reload: specifies the IWDG Reload value.
+    159            *          This parameter must be a number between 0 and 0x0FFF.
+    160            * @retval None
+    161            */
+
+   \                                 In section .text, align 2, keep-with-next
+    162          void IWDG_SetReload(uint16_t Reload)
+    163          {
+   \                     IWDG_SetReload: (+1)
+   \   00000000   0xB510             PUSH     {R4,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    164            /* Check the parameters */
+    165            assert_param(IS_IWDG_RELOAD(Reload));
+   \   00000004   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   00000006   0xF5B4 0x5F80      CMP      R4,#+4096
+   \   0000000A   0xDB03             BLT.N    ??IWDG_SetReload_0
+   \   0000000C   0x21A5             MOVS     R1,#+165
+   \   0000000E   0x....             LDR.N    R0,??DataTable5
+   \   00000010   0x.... 0x....      BL       assert_failed
+    166            IWDG->RLR = Reload;
+   \                     ??IWDG_SetReload_0: (+1)
+   \   00000014   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   00000016   0x....             LDR.N    R0,??DataTable5_3  ;; 0x40003008
+   \   00000018   0x6004             STR      R4,[R0, #+0]
+    167          }
+   \   0000001A   0xBD10             POP      {R4,PC}          ;; return
+    168          
+    169          /**
+    170            * @brief  Reloads IWDG counter with value defined in the reload register
+    171            *         (write access to IWDG_PR and IWDG_RLR registers disabled).
+    172            * @param  None
+    173            * @retval None
+    174            */
+
+   \                                 In section .text, align 2, keep-with-next
+    175          void IWDG_ReloadCounter(void)
+    176          {
+    177            IWDG->KR = KR_KEY_RELOAD;
+   \                     IWDG_ReloadCounter: (+1)
+   \   00000000   0xF64A 0x20AA      MOVW     R0,#+43690
+   \   00000004   0x....             LDR.N    R1,??DataTable5_1  ;; 0x40003000
+   \   00000006   0x6008             STR      R0,[R1, #+0]
+    178          }
+   \   00000008   0x4770             BX       LR               ;; return
+    179          
+    180          /**
+    181            * @}
+    182            */
+    183          
+    184          /** @defgroup IWDG_Group2 IWDG activation function
+    185           *  @brief   IWDG activation function 
+    186           *
+    187          @verbatim   
+    188           ===============================================================================
+    189                                    IWDG activation function
+    190           ===============================================================================  
+    191          
+    192          @endverbatim
+    193            * @{
+    194            */
+    195          
+    196          /**
+    197            * @brief  Enables IWDG (write access to IWDG_PR and IWDG_RLR registers disabled).
+    198            * @param  None
+    199            * @retval None
+    200            */
+
+   \                                 In section .text, align 2, keep-with-next
+    201          void IWDG_Enable(void)
+    202          {
+    203            IWDG->KR = KR_KEY_ENABLE;
+   \                     IWDG_Enable: (+1)
+   \   00000000   0xF64C 0x40CC      MOVW     R0,#+52428
+   \   00000004   0x....             LDR.N    R1,??DataTable5_1  ;; 0x40003000
+   \   00000006   0x6008             STR      R0,[R1, #+0]
+    204          }
+   \   00000008   0x4770             BX       LR               ;; return
+    205          
+    206          /**
+    207            * @}
+    208            */
+    209          
+    210          /** @defgroup IWDG_Group3 Flag management function 
+    211           *  @brief  Flag management function  
+    212           *
+    213          @verbatim   
+    214           ===============================================================================
+    215                                      Flag management function 
+    216           ===============================================================================  
+    217          
+    218          @endverbatim
+    219            * @{
+    220            */
+    221          
+    222          /**
+    223            * @brief  Checks whether the specified IWDG flag is set or not.
+    224            * @param  IWDG_FLAG: specifies the flag to check.
+    225            *          This parameter can be one of the following values:
+    226            *            @arg IWDG_FLAG_PVU: Prescaler Value Update on going
+    227            *            @arg IWDG_FLAG_RVU: Reload Value Update on going
+    228            * @retval The new state of IWDG_FLAG (SET or RESET).
+    229            */
+
+   \                                 In section .text, align 2, keep-with-next
+    230          FlagStatus IWDG_GetFlagStatus(uint16_t IWDG_FLAG)
+    231          {
+   \                     IWDG_GetFlagStatus: (+1)
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+    232            FlagStatus bitstatus = RESET;
+   \   00000004   0x2500             MOVS     R5,#+0
+    233            /* Check the parameters */
+    234            assert_param(IS_IWDG_FLAG(IWDG_FLAG));
+   \   00000006   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   00000008   0x2C01             CMP      R4,#+1
+   \   0000000A   0xD006             BEQ.N    ??IWDG_GetFlagStatus_0
+   \   0000000C   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   0000000E   0x2C02             CMP      R4,#+2
+   \   00000010   0xD003             BEQ.N    ??IWDG_GetFlagStatus_0
+   \   00000012   0x21EA             MOVS     R1,#+234
+   \   00000014   0x....             LDR.N    R0,??DataTable5
+   \   00000016   0x.... 0x....      BL       assert_failed
+    235            if ((IWDG->SR & IWDG_FLAG) != (uint32_t)RESET)
+   \                     ??IWDG_GetFlagStatus_0: (+1)
+   \   0000001A   0x....             LDR.N    R0,??DataTable5_4  ;; 0x4000300c
+   \   0000001C   0x6800             LDR      R0,[R0, #+0]
+   \   0000001E   0xB2A4             UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   00000020   0x4220             TST      R0,R4
+   \   00000022   0xD002             BEQ.N    ??IWDG_GetFlagStatus_1
+    236            {
+    237              bitstatus = SET;
+   \   00000024   0x2001             MOVS     R0,#+1
+   \   00000026   0x0005             MOVS     R5,R0
+   \   00000028   0xE001             B.N      ??IWDG_GetFlagStatus_2
+    238            }
+    239            else
+    240            {
+    241              bitstatus = RESET;
+   \                     ??IWDG_GetFlagStatus_1: (+1)
+   \   0000002A   0x2000             MOVS     R0,#+0
+   \   0000002C   0x0005             MOVS     R5,R0
+    242            }
+    243            /* Return the flag status */
+    244            return bitstatus;
+   \                     ??IWDG_GetFlagStatus_2: (+1)
+   \   0000002E   0x0028             MOVS     R0,R5
+   \   00000030   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000032   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+    245          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5:
+   \   00000000   0x........         DC32     ?_0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_1:
+   \   00000000   0x40003000         DC32     0x40003000
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_2:
+   \   00000000   0x40003004         DC32     0x40003004
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_3:
+   \   00000000   0x40003008         DC32     0x40003008
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_4:
+   \   00000000   0x4000300C         DC32     0x4000300c
+
+   \                                 In section .rodata, align 4
+   \                     ?_0:
+   \   00000000   0x44 0x3A          DC8 44H, 3AH, 5CH, 49H, 41H, 52H, 20H, 57H
+   \              0x5C 0x49    
+   \              0x41 0x52    
+   \              0x20 0x57    
+   \   00000008   0x6F 0x72          DC8 6FH, 72H, 6BH, 73H, 70H, 61H, 63H, 65H
+   \              0x6B 0x73    
+   \              0x70 0x61    
+   \              0x63 0x65    
+   \   00000010   0x5C 0x53          DC8 5CH, 53H, 54H, 4DH, 33H, 32H, 46H, 34H
+   \              0x54 0x4D    
+   \              0x33 0x32    
+   \              0x46 0x34    
+   \   00000018   0x30 0x37          DC8 30H, 37H, 5CH, 53H, 54H, 4DH, 33H, 32H
+   \              0x5C 0x53    
+   \              0x54 0x4D    
+   \              0x33 0x32    
+   \   00000020   0x46 0x34          DC8 46H, 34H, 2DH, 44H, 69H, 73H, 63H, 6FH
+   \              0x2D 0x44    
+   \              0x69 0x73    
+   \              0x63 0x6F    
+   \   00000028   0x76 0x65          DC8 76H, 65H, 72H, 79H, 5FH, 46H, 57H, 5FH
+   \              0x72 0x79    
+   \              0x5F 0x46    
+   \              0x57 0x5F    
+   \   00000030   0x56 0x31          DC8 56H, 31H, 2EH, 31H, 2EH, 30H, 5CH, 4CH
+   \              0x2E 0x31    
+   \              0x2E 0x30    
+   \              0x5C 0x4C    
+   \   00000038   0x69 0x62          DC8 69H, 62H, 72H, 61H, 72H, 69H, 65H, 73H
+   \              0x72 0x61    
+   \              0x72 0x69    
+   \              0x65 0x73    
+   \   00000040   0x5C 0x53          DC8 5CH, 53H, 54H, 4DH, 33H, 32H, 46H, 34H
+   \              0x54 0x4D    
+   \              0x33 0x32    
+   \              0x46 0x34    
+   \   00000048   0x78 0x78          DC8 78H, 78H, 5FH, 53H, 74H, 64H, 50H, 65H
+   \              0x5F 0x53    
+   \              0x74 0x64    
+   \              0x50 0x65    
+   \   00000050   0x72 0x69          DC8 72H, 69H, 70H, 68H, 5FH, 44H, 72H, 69H
+   \              0x70 0x68    
+   \              0x5F 0x44    
+   \              0x72 0x69    
+   \   00000058   0x76 0x65          DC8 76H, 65H, 72H, 5CH, 73H, 72H, 63H, 5CH
+   \              0x72 0x5C    
+   \              0x73 0x72    
+   \              0x63 0x5C    
+   \   00000060   0x73 0x74          DC8 73H, 74H, 6DH, 33H, 32H, 66H, 34H, 78H
+   \              0x6D 0x33    
+   \              0x32 0x66    
+   \              0x34 0x78    
+   \   00000068   0x78 0x5F          DC8 78H, 5FH, 69H, 77H, 64H, 67H, 2EH, 63H
+   \              0x69 0x77    
+   \              0x64 0x67    
+   \              0x2E 0x63    
+   \   00000070   0x00               DC8 0
+   \   00000071   0x00 0x00          DC8 0, 0, 0
+   \              0x00         
+    246          
+    247          /**
+    248            * @}
+    249            */
+    250          
+    251          /**
+    252            * @}
+    253            */
+    254          
+    255          /**
+    256            * @}
+    257            */
+    258          
+    259          /**
+    260            * @}
+    261            */
+    262          
+    263          /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       0   IWDG_Enable
+      16   IWDG_GetFlagStatus
+        16   -> assert_failed
+       0   IWDG_ReloadCounter
+       8   IWDG_SetPrescaler
+         8   -> assert_failed
+       8   IWDG_SetReload
+         8   -> assert_failed
+       8   IWDG_WriteAccessCmd
+         8   -> assert_failed
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable5
+       4  ??DataTable5_1
+       4  ??DataTable5_2
+       4  ??DataTable5_3
+       4  ??DataTable5_4
+     116  ?_0
+      10  IWDG_Enable
+      52  IWDG_GetFlagStatus
+      10  IWDG_ReloadCounter
+      62  IWDG_SetPrescaler
+      28  IWDG_SetReload
+      36  IWDG_WriteAccessCmd
+
+ 
+ 116 bytes in section .rodata
+ 218 bytes in section .text
+ 
+ 218 bytes of CODE  memory
+ 116 bytes of CONST memory
+
+Errors: none
+Warnings: none
